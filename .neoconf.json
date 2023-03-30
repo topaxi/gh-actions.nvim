@@ -1,7 +1,8 @@
 {
   "neodev": {
     "library": {
-      "enabled": true
+      "enabled": true,
+      "plugins": ["nui.nvim", "plenary.nvim"]
     }
   },
   "neoconf": {
