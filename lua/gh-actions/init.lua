@@ -51,13 +51,18 @@ local function fetch_github(path)
 end
 
 ---@param repo string
+---@return GhWorkflow[]
 local function get_github_workflows(repo)
   local response = fetch_github(string.format("/repos/%s/actions/workflows", repo))
+
+  if not response then
+    return {}
+  end
 
   ---@type GhWorkflowsResponse | nil
   local responseData = vim.json.decode(response.body)
 
-  return responseData and responseData.workflows
+  return responseData and responseData.workflows or {}
 end
 
 local split = Split({
