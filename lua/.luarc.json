@@ -27,6 +27,7 @@
         "/home/topaxi/.local/share/nvim/lazy/cmp-nvim-lsp/after",
         "/home/topaxi/.local/share/nvim/lazy/sonokai/after",
         "/home/topaxi/gitty/github/gh-actions.nvim/lua",
-        "${3rd}/luassert/library"
+        "${3rd}/luassert/library",
+        "${3rd}/luv/library"
     ]
 }
