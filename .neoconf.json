@@ -8,7 +8,9 @@
   "neoconf": {
     "plugins": {
       "lua_ls": {
-        "enabled": true
+        "enabled": true,
+        "Lua.runtime.version": "LuaJIT",
+        "Lua.workspace.checkThirdParty": false
       }
     }
   }
