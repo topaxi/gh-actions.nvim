@@ -1,5 +1,6 @@
 local Split = require("nui.split")
 local curl = require("plenary.curl")
+local job = require("plenary.job")
 
 ---@class GhWorkflow
 ---@field id number
@@ -17,11 +18,34 @@ local curl = require("plenary.curl")
 ---@field total_count number
 ---@field workflows GhWorkflow[]
 
+---@return string
+local function read_gh_hosts_token()
+  -- TODO: Can we not depend on `yq` for parsing yml?
+  local yq = job:new({
+    command = "yq",
+    args = { "-o", "json", vim.fn.expand("$HOME/.config/gh/hosts.yml") },
+  })
+
+  yq:sync()
+
+  local jsonStr = table.concat(yq:result(), "\n")
+  local ghHostsConfig = vim.json.decode(jsonStr)
+
+  return ghHostsConfig["github.com"].oauth_token
+end
+
+---@return string
+local function get_github_token()
+  return vim.env.GITHUB_TOKEN
+    or read_gh_hosts_token()
+    or assert(nil, "No GITHUB_TOKEN found in env and no gh cli config found")
+end
+
 ---@param path string
 local function fetch_github(path)
   return curl.get(string.format("https://api.github.com%s", path), {
     headers = {
-      Authorization = string.format("Bearer %s", vim.env.GITHUB_TOKEN),
+      Authorization = string.format("Bearer %s", get_github_token()),
     },
   })
 end
