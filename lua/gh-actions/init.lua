@@ -84,7 +84,7 @@ end
 function M.open()
   split:mount()
 
-  local workflows = get_github_workflows("topaxi/topaxi")
+  local workflows = get_github_workflows("topaxi/learning-cs")
 
   print(vim.inspect(workflows))
 end
