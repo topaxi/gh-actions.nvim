@@ -3,12 +3,21 @@ local job = require("plenary.job")
 
 local M = {}
 
----@param repository_dir string
+---TODO instead of invoking git, we could parse the remote ourselves
+---@param repository_dir? string
 function M.get_current_repository(repository_dir)
   -- 1. get git dir
   -- 2. get current branch
   -- 3. get origin of branch
   -- 4. parse github owner/repo from origin
+  local gh = job:new({
+    command = "gh",
+    args = { "repo", "view", "--json", "owner,name", "--template", "{{.owner.login}}/{{.name}}" },
+  })
+
+  gh:sync()
+
+  return table.concat(gh:result(), "")
 end
 
 ---@return string
@@ -36,12 +45,16 @@ local function get_github_token()
 end
 
 ---@param path string
-function M.fetch(path)
-  return curl.get(string.format("https://api.github.com%s", path), {
-    headers = {
-      Authorization = string.format("Bearer %s", get_github_token()),
-    },
-  })
+---@param opts? table
+function M.fetch(path, opts)
+  return curl.get(
+    string.format("https://api.github.com%s", path),
+    vim.tbl_deep_extend("force", opts or {}, {
+      headers = {
+        Authorization = string.format("Bearer %s", get_github_token()),
+      },
+    })
+  )
 end
 
 ---@class GhWorkflow
@@ -61,9 +74,10 @@ end
 ---@field workflows GhWorkflow[]
 
 ---@param repo string
+---@param opts? table
 ---@return GhWorkflow[]
-function M.get_workflows(repo)
-  local response = M.fetch(string.format("/repos/%s/actions/workflows", repo))
+function M.get_workflows(repo, opts)
+  local response = M.fetch(string.format("/repos/%s/actions/workflows", repo), opts)
 
   if not response then
     return {}
@@ -93,9 +107,10 @@ end
 
 ---@param repo string
 ---@param per_page? integer
+---@param opts? table
 ---@return GhWorkflowRun[]
-function M.get_workflow_runs(repo, per_page)
-  local response = M.fetch(string.format("/repos/%s/actions/runs?per_page=%d", repo, per_page or 100))
+function M.get_workflow_runs(repo, per_page, opts)
+  local response = M.fetch(string.format("/repos/%s/actions/runs?per_page=%d", repo, per_page or 20), opts)
 
   if not response then
     return {}
