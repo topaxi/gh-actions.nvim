@@ -74,7 +74,8 @@ end
 local function renderWorkflows(workflows, workflow_runs)
   local workflow_runs_by_workflow_id = group_by_workflow(workflow_runs)
 
-  vim.api.nvim_buf_set_lines(split.bufnr, 0, 0, false, { "Github Workflows" })
+  vim.api.nvim_buf_set_lines(split.bufnr, 0, 2, false, { "Github Workflows", "" })
+  vim.api.nvim_buf_set_lines(split.bufnr, 2, -1, true, {})
 
   for _, workflow in pairs(workflows) do
     vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, { workflow.name })
@@ -93,10 +94,30 @@ function M.open()
 
   local repo = gh.get_current_repository()
 
-  local workflows = gh.get_workflows(repo)
-  local workflow_runs = gh.get_workflow_runs(repo)
+  local workflows = {}
+  local workflow_runs = {}
 
-  renderWorkflows(workflows, workflow_runs)
+  local render = function()
+    renderWorkflows(workflows, workflow_runs)
+  end
+
+  gh.get_workflows(repo, {
+    callback = vim.schedule_wrap(function(w)
+      workflows = w
+
+      render()
+
+      gh.get_workflow_runs(repo, 20, {
+        callback = vim.schedule_wrap(function(wr)
+          workflow_runs = wr
+
+          render()
+        end),
+      })
+    end),
+  })
+
+  render()
 end
 
 function M.close()

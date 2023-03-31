@@ -47,9 +47,11 @@ end
 ---@param path string
 ---@param opts? table
 function M.fetch(path, opts)
+  opts = opts or {}
+
   return curl.get(
     string.format("https://api.github.com%s", path),
-    vim.tbl_deep_extend("force", opts or {}, {
+    vim.tbl_deep_extend("force", opts, {
       headers = {
         Authorization = string.format("Bearer %s", get_github_token()),
       },
@@ -75,18 +77,30 @@ end
 
 ---@param repo string
 ---@param opts? table
----@return GhWorkflow[]
 function M.get_workflows(repo, opts)
-  local response = M.fetch(string.format("/repos/%s/actions/workflows", repo), opts)
+  opts = opts or {}
 
-  if not response then
-    return {}
-  end
+  return M.fetch(
+    string.format("/repos/%s/actions/workflows", repo),
+    vim.tbl_deep_extend("force", opts, {
+      callback = function(response)
+        if not response then
+          return {}
+        end
 
-  ---@type GhWorkflowsResponse | nil
-  local responseData = vim.json.decode(response.body)
+        ---@type GhWorkflowsResponse | nil
+        local responseData = vim.json.decode(response.body)
 
-  return responseData and responseData.workflows or {}
+        local ret = responseData and responseData.workflows or {}
+
+        if opts.callback then
+          return opts.callback(ret)
+        else
+          return ret
+        end
+      end,
+    })
+  )
 end
 
 ---@class GhCommit
@@ -108,18 +122,30 @@ end
 ---@param repo string
 ---@param per_page? integer
 ---@param opts? table
----@return GhWorkflowRun[]
 function M.get_workflow_runs(repo, per_page, opts)
-  local response = M.fetch(string.format("/repos/%s/actions/runs?per_page=%d", repo, per_page or 20), opts)
+  opts = opts or {}
 
-  if not response then
-    return {}
-  end
+  return M.fetch(
+    string.format("/repos/%s/actions/runs", repo),
+    vim.tbl_deep_extend("force", { query = { per_page = per_page } }, opts, {
+      callback = function(response)
+        if not response then
+          return {}
+        end
 
-  ---@type GhWorkflowRunsResponse | nil
-  local responseData = vim.json.decode(response.body)
+        ---@type GhWorkflowRunsResponse | nil
+        local responseData = vim.json.decode(response.body)
 
-  return responseData and responseData.workflow_runs or {}
+        local ret = (responseData and responseData.workflow_runs or {})
+
+        if opts.callback then
+          return opts.callback(ret)
+        else
+          return ret
+        end
+      end,
+    })
+  )
 end
 
 return M
