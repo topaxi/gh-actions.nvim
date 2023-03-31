@@ -15,6 +15,8 @@ function M.setup()
   M.init_root = vim.fn.getcwd()
 
   M.setup_called = true
+
+  vim.api.nvim_create_user_command("GhActions", M.open, {})
 end
 
 function M.open()
