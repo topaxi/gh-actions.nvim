@@ -22,7 +22,11 @@ function M.open()
 
   local workflows = gh.get_workflows("topaxi/learning-cs")
 
-  print(vim.inspect(workflows))
+  vim.api.nvim_buf_set_lines(split.bufnr, 0, 0, false, { "Github Workflows" })
+
+  for line, workflow in pairs(workflows) do
+    vim.api.nvim_buf_set_lines(split.bufnr, line, line, false, { workflow.name })
+  end
 end
 
 function M.close()
