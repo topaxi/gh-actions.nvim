@@ -62,6 +62,10 @@ local status_icon_map = {
 ---@param run GhWorkflowRun
 ---@return string
 local function get_workflow_run_icon(run)
+  if not run then
+    return "?"
+  end
+
   if run.status == "completed" then
     return conclusion_icon_map[run.conclusion] or run.conclusion
   end
@@ -78,7 +82,15 @@ local function renderWorkflows(workflows, workflow_runs)
   vim.api.nvim_buf_set_lines(split.bufnr, 2, -1, true, {})
 
   for _, workflow in pairs(workflows) do
-    vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, { workflow.name })
+    local latestRun = (workflow_runs_by_workflow_id[workflow.id] or {})[1]
+
+    vim.api.nvim_buf_set_lines(
+      split.bufnr,
+      -1,
+      -1,
+      true,
+      { string.format("%s %s", get_workflow_run_icon(latestRun), workflow.name) }
+    )
 
     for _, run in pairs(workflow_runs_by_workflow_id[workflow.id] or {}) do
       vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, {
