@@ -39,6 +39,7 @@ end
 local function get_github_token()
   return vim.env.GITHUB_TOKEN
     or read_gh_hosts_token()
+    -- TODO: We could also ask for the token here via nui
     or assert(nil, "No GITHUB_TOKEN found in env and no gh cli config found")
 end
 
