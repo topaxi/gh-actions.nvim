@@ -21,6 +21,7 @@ end
 
 function M.open()
   split:mount()
+  split:map("n", "q", M.close, { noremap = true })
 
   local workflows = gh.get_workflows("topaxi/learning-cs")
 
