@@ -30,19 +30,19 @@ function M.open()
   ui.split:map("n", "q", M.close, { noremap = true })
 
   gh.get_workflows(repo, {
-    callback = vim.schedule_wrap(function(workflows)
+    callback = function(workflows)
       ui.update_state(function(state)
         state.workflows = workflows
       end)
-    end),
+    end,
   })
 
   gh.get_repository_workflow_runs(repo, 100, {
-    callback = vim.schedule_wrap(function(workflow_runs)
+    callback = function(workflow_runs)
       ui.update_state(function(state)
         state.workflow_runs = workflow_runs
       end)
-    end),
+    end,
   })
 end
 

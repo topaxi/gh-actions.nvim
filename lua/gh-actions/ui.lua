@@ -92,7 +92,7 @@ function M.render()
   renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)
 end
 
-M.render = utils.debounced(M.render)
+M.render = utils.debounced(vim.schedule_wrap(M.render))
 
 ---@class GhActionsRenderState
 ---@field workflows GhWorkflow[]
