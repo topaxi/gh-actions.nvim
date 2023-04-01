@@ -1,4 +1,5 @@
 local Split = require("nui.split")
+local utils = require("gh-actions.utils")
 
 local split = Split({
   position = "right",
@@ -88,6 +89,8 @@ end
 function M.render()
   renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)
 end
+
+M.render = utils.debounced(M.render)
 
 ---@class GhActionsRenderState
 ---@field workflows GhWorkflow[]
