@@ -87,6 +87,10 @@ local function renderWorkflows(workflows, workflow_runs)
         string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", "")),
       })
     end
+
+    if #runs > 0 then
+      vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, { "" })
+    end
   end
 end
 
