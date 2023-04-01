@@ -78,7 +78,11 @@ local function renderWorkflows(workflows, workflow_runs)
       { string.format("%s %s", get_workflow_run_icon(latestRun), workflow.name) }
     )
 
-    for _, run in ipairs(workflow_runs_by_workflow_id[workflow.id] or {}) do
+    local runs = workflow_runs_by_workflow_id[workflow.id] or {}
+
+    -- TODO cutting down on how many we list here, as we fetch 100 overall repo
+    -- runs on opening the split. I guess we do want to have this configurable.
+    for _, run in ipairs({ unpack(runs, 1, math.min(5, #runs)) }) do
       vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, {
         string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", "")),
       })

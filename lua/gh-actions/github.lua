@@ -119,31 +119,55 @@ end
 ---@field total_count number
 ---@field workflow_runs GhWorkflowRun[]
 
+---@param opts? table
+local function process_workflow_runs_response(opts)
+  opts = opts or {}
+
+  ---@param response table
+  ---@return GhWorkflowRunsResponse
+  return function(response)
+    if not response then
+      return {}
+    end
+
+    ---@type GhWorkflowRunsResponse | nil
+    local responseData = vim.json.decode(response.body)
+
+    local ret = (responseData and responseData.workflow_runs or {})
+
+    if opts.callback then
+      return opts.callback(ret)
+    else
+      return ret
+    end
+  end
+end
+
 ---@param repo string
 ---@param per_page? integer
 ---@param opts? table
-function M.get_workflow_runs(repo, per_page, opts)
+function M.get_repository_workflow_runs(repo, per_page, opts)
   opts = opts or {}
 
   return M.fetch(
     string.format("/repos/%s/actions/runs", repo),
     vim.tbl_deep_extend("force", { query = { per_page = per_page } }, opts, {
-      callback = function(response)
-        if not response then
-          return {}
-        end
+      callback = process_workflow_runs_response(opts),
+    })
+  )
+end
 
-        ---@type GhWorkflowRunsResponse | nil
-        local responseData = vim.json.decode(response.body)
+---@param repo string
+---@param workflow_id integer
+---@param per_page? integer
+---@param opts? table
+function M.get_workflow_runs(repo, workflow_id, per_page, opts)
+  opts = opts or {}
 
-        local ret = (responseData and responseData.workflow_runs or {})
-
-        if opts.callback then
-          return opts.callback(ret)
-        else
-          return ret
-        end
-      end,
+  return M.fetch(
+    string.format("/repos/%s/actions/workflows/%d/runs", repo, workflow_id),
+    vim.tbl_deep_extend("force", { query = { per_page = per_page } }, opts, {
+      callback = process_workflow_runs_response(opts),
     })
   )
 end

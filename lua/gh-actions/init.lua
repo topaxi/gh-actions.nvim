@@ -35,7 +35,7 @@ function M.open()
         state.workflows = workflows
       end)
 
-      gh.get_workflow_runs(repo, 20, {
+      gh.get_repository_workflow_runs(repo, 100, {
         callback = vim.schedule_wrap(function(workflow_runs)
           ui.update_state(function(state)
             state.workflow_runs = workflow_runs
