@@ -39,7 +39,7 @@ end
 local function group_by_workflow(runs)
   local m = {}
 
-  for _, run in pairs(runs) do
+  for _, run in ipairs(runs) do
     m[run.workflow_id] = m[run.workflow_id] or {}
     table.insert(m[run.workflow_id], run)
   end
@@ -81,7 +81,7 @@ local function renderWorkflows(workflows, workflow_runs)
   vim.api.nvim_buf_set_lines(split.bufnr, 0, 2, false, { "Github Workflows", "" })
   vim.api.nvim_buf_set_lines(split.bufnr, 2, -1, true, {})
 
-  for _, workflow in pairs(workflows) do
+  for _, workflow in ipairs(workflows) do
     local latestRun = (workflow_runs_by_workflow_id[workflow.id] or {})[1]
 
     vim.api.nvim_buf_set_lines(
@@ -92,7 +92,7 @@ local function renderWorkflows(workflows, workflow_runs)
       { string.format("%s %s", get_workflow_run_icon(latestRun), workflow.name) }
     )
 
-    for _, run in pairs(workflow_runs_by_workflow_id[workflow.id] or {}) do
+    for _, run in ipairs(workflow_runs_by_workflow_id[workflow.id] or {}) do
       vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, {
         string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", "")),
       })
