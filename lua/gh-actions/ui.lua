@@ -60,43 +60,48 @@ local function group_by_workflow(runs)
   return m
 end
 
+local function renderTitle()
+  return { "Github Workflows", "" }
+end
+
 ---@param workflows GhWorkflow[]
 ---@param workflow_runs GhWorkflowRun[]
+---@return table
 local function renderWorkflows(workflows, workflow_runs)
+  local lines = {}
   local workflow_runs_by_workflow_id = group_by_workflow(workflow_runs)
-
-  vim.api.nvim_buf_set_lines(split.bufnr, 0, 2, false, { "Github Workflows", "" })
-  vim.api.nvim_buf_set_lines(split.bufnr, 2, -1, true, {})
 
   for _, workflow in ipairs(workflows) do
     local runs = workflow_runs_by_workflow_id[workflow.id] or {}
 
-    vim.api.nvim_buf_set_lines(
-      split.bufnr,
-      -1,
-      -1,
-      true,
-      -- TODO Render ⚡️ if workflow has workflow dispatch
-      { string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name) }
-    )
+    -- TODO Render ⚡️ if workflow has workflow dispatch
+    table.insert(lines, string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name))
 
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
     -- runs on opening the split. I guess we do want to have this configurable.
     for _, run in ipairs({ unpack(runs, 1, math.min(5, #runs)) }) do
-      vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, {
-        string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", "")),
-      })
+      table.insert(
+        lines,
+        string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", ""))
+      )
     end
 
     if #runs > 0 then
-      vim.api.nvim_buf_set_lines(split.bufnr, -1, -1, true, { "" })
+      table.insert(lines, "")
     end
   end
+
+  return lines
 end
 
 function M.render()
   vim.bo[split.bufnr].modifiable = true
-  renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)
+  local lines = vim.tbl_flatten({
+    renderTitle(),
+    renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs),
+  })
+
+  vim.api.nvim_buf_set_lines(split.bufnr, 0, -1, false, lines)
   vim.bo[split.bufnr].modifiable = false
 end
 
