@@ -16,6 +16,7 @@ local split = Split({
 local M = {
   split = split,
   render_state = {
+    repo = nil,
     workflows = {},
     workflow_runs = {},
   },
@@ -61,7 +62,11 @@ local function group_by_workflow(runs)
 end
 
 local function renderTitle()
-  return { "Github Workflows", "" }
+  if not M.render_state.repo then
+    return { "Github Workflows", "" }
+  end
+
+  return { string.format("Github Workflows for %s", M.render_state.repo), "" }
 end
 
 ---@param workflows GhWorkflow[]

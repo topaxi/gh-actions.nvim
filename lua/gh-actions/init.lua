@@ -31,6 +31,10 @@ end
 local function fetch_data()
   local repo = gh.get_current_repository()
 
+  ui.update_state(function(state)
+    state.repo = repo
+  end)
+
   gh.get_workflows(repo, {
     callback = function(workflows)
       ui.update_state(function(state)
