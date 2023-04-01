@@ -100,28 +100,34 @@ local function renderWorkflows(workflows, workflow_runs)
   end
 end
 
+---@class GhActionsRenderState
+---@field workflows GhWorkflow[]
+---@field workflows_runs GhWorkflowRun[]
+
 function M.open()
   split:mount()
   split:map("n", "q", M.close, { noremap = true })
 
   local repo = gh.get_current_repository()
 
-  local workflows = {}
-  local workflow_runs = {}
+  local render_state = {
+    workflows = {},
+    workflow_runs = {},
+  }
 
   local render = function()
-    renderWorkflows(workflows, workflow_runs)
+    renderWorkflows(render_state.workflows, render_state.workflow_runs)
   end
 
   gh.get_workflows(repo, {
-    callback = vim.schedule_wrap(function(w)
-      workflows = w
+    callback = vim.schedule_wrap(function(workflows)
+      render_state.workflows = workflows
 
       render()
 
       gh.get_workflow_runs(repo, 20, {
-        callback = vim.schedule_wrap(function(wr)
-          workflow_runs = wr
+        callback = vim.schedule_wrap(function(workflow_runs)
+          render_state.workflow_runs = workflow_runs
 
           render()
         end),
