@@ -5,6 +5,7 @@ local M = {
   setup_called = false,
   init_root = "",
   refresh_interval = 10,
+  timer = nil,
 }
 
 ---@class GhActionsOptions
@@ -23,11 +24,12 @@ function M.setup(opts)
   vim.api.nvim_create_user_command("GhActions", M.open, {})
 end
 
-function M.open()
+--TODO Only periodically fetch all workflows
+--     then fetch runs for a single workflow (tabs/expandable)
+--     Maybe periodically fetch all workflow runs to update
+--     "toplevel" workflow states
+local function fetch_data()
   local repo = gh.get_current_repository()
-
-  ui.open()
-  ui.split:map("n", "q", M.close, { noremap = true })
 
   gh.get_workflows(repo, {
     callback = function(workflows)
@@ -46,8 +48,19 @@ function M.open()
   })
 end
 
+function M.open()
+  ui.open()
+  ui.split:map("n", "q", M.close, { noremap = true })
+
+  M.timer = vim.loop.new_timer()
+  M.timer:start(0, M.refresh_interval * 1000, vim.schedule_wrap(fetch_data))
+end
+
 function M.close()
   ui.close()
+  M.timer:stop()
+  M.timer:close()
+  M.timer = nil
 end
 
 return M

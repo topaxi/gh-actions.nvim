@@ -6,9 +6,10 @@ local split = Split({
   size = 60,
   win_options = {
     number = false,
-    --TODO Do we use folds or some custom "component"?
-    foldlevel = 0,
+    foldlevel = nil,
+    foldcolumn = "0",
     cursorcolumn = false,
+    signcolumn = "no",
   },
 })
 
@@ -75,6 +76,7 @@ local function renderWorkflows(workflows, workflow_runs)
       -1,
       -1,
       true,
+      -- TODO Render ⚡️ if workflow has workflow dispatch
       { string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name) }
     )
 
