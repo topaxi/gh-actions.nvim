@@ -95,7 +95,9 @@ local function renderWorkflows(workflows, workflow_runs)
 end
 
 function M.render()
+  vim.bo[split.bufnr].modifiable = true
   renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)
+  vim.bo[split.bufnr].modifiable = false
 end
 
 M.render = utils.debounced(vim.schedule_wrap(M.render))
