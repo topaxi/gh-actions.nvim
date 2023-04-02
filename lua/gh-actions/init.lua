@@ -60,6 +60,12 @@ end
 function M.open()
   ui.open()
   ui.split:map("n", "q", M.close, { noremap = true })
+  ui.split:map("n", "<cr>", function()
+    print("Workflow:")
+    print(vim.inspect(ui.get_workflow()))
+    print("Workflow Run:")
+    print(vim.inspect(ui.get_workflow_run()))
+  end, { noremap = true })
 
   M.timer = vim.loop.new_timer()
   M.timer:start(0, M.refresh_interval * 1000, vim.schedule_wrap(fetch_data))

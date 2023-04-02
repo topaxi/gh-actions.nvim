@@ -14,6 +14,12 @@ local split = Split({
   },
 })
 
+---@class GhActionsRenderLocation
+---@field value any
+---@field kind string
+---@field from integer
+---@field to integer
+
 local M = {
   split = split,
   render_state = {
@@ -21,6 +27,9 @@ local M = {
     workflows = {},
     workflow_runs = {},
   },
+  -- TODO: While rendering, store row/line (start line,end line) and kind
+  ---@type GhActionsRenderLocation[]
+  locations = {},
   -- TODO: Maybe switch to codicons via nerdfont
   --       https://microsoft.github.io/vscode-codicons/dist/codicon.html
   --       https://www.nerdfonts.com/cheat-sheet
@@ -75,22 +84,72 @@ local function renderTitle()
   return { string.format("Github Workflows for %s", M.render_state.repo), "" }
 end
 
+local function get_current_line(line)
+  print(vim.inspect(split))
+  return line or vim.api.nvim_win_get_cursor(split.winid)[1]
+end
+
+---TODO: This should be a local function
+---@param line? integer
+---@return GhWorkflow|nil
+function M.get_workflow(line)
+  line = get_current_line(line)
+
+  for _, loc in ipairs(M.locations) do
+    if loc.kind == "workflow" and line >= loc.from and line <= loc.to then
+      return loc.value
+    end
+  end
+end
+
+---TODO: This should be a local function
+---@param line? integer
+---@return GhWorkflowRun|nil
+function M.get_workflow_run(line)
+  line = get_current_line(line)
+
+  for _, loc in ipairs(M.locations) do
+    if loc.kind == "workflow_run" and line >= loc.from and line <= loc.to then
+      return loc.value
+    end
+  end
+end
+
 ---@param workflows GhWorkflow[]
 ---@param workflow_runs GhWorkflowRun[]
 ---@return table
 local function renderWorkflows(workflows, workflow_runs)
   local lines = {}
   local workflow_runs_by_workflow_id = group_by_workflow(workflow_runs)
+  local currentline = 3
 
   for _, workflow in ipairs(workflows) do
+    currentline = currentline + 1
     local runs = workflow_runs_by_workflow_id[workflow.id] or {}
+    local runs_n = math.min(5, #runs)
+
+    table.insert(M.locations, {
+      kind = "workflow",
+      value = workflow,
+      from = currentline,
+      to = currentline + runs_n,
+    })
 
     -- TODO Render ⚡️ or ✨ if workflow has workflow dispatch
     table.insert(lines, string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name))
 
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
     -- runs on opening the split. I guess we do want to have this configurable.
-    for _, run in ipairs({ unpack(runs, 1, math.min(5, #runs)) }) do
+    for _, run in ipairs({ unpack(runs, 1, runs_n) }) do
+      currentline = currentline + 1
+
+      table.insert(M.locations, {
+        kind = "workflow_run",
+        value = run,
+        from = currentline,
+        to = currentline,
+      })
+
       table.insert(
         lines,
         string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", ""))
@@ -98,6 +157,7 @@ local function renderWorkflows(workflows, workflow_runs)
     end
 
     if #runs > 0 then
+      currentline = currentline + 1
       table.insert(lines, "")
     end
   end
@@ -110,6 +170,8 @@ local function is_visible()
 end
 
 function M.render()
+  M.locations = {}
+
   if not is_visible() then
     return
   end
