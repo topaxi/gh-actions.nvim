@@ -31,6 +31,7 @@ local M = {
       cancelled = "⊘",
     },
     status = {
+      unknown = "?",
       pending = "●",
       requested = "●",
       waiting = "●",
@@ -43,14 +44,14 @@ local M = {
 ---@return string
 local function get_workflow_run_icon(run)
   if not run then
-    return "?"
+    return M.icons.status.unknown
   end
 
   if run.status == "completed" then
     return M.icons.conclusion[run.conclusion] or run.conclusion
   end
 
-  return M.icons.status[run.status] or "?"
+  return M.icons.status[run.status] or M.icons.status.unknown
 end
 
 ---@param runs GhWorkflowRun[]
