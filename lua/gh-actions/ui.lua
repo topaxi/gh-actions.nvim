@@ -99,7 +99,15 @@ local function renderWorkflows(workflows, workflow_runs)
   return lines
 end
 
+local function is_visible()
+  return split.bufnr ~= nil and vim.bo[split.bufnr] ~= nil
+end
+
 function M.render()
+  if not is_visible() then
+    return
+  end
+
   vim.bo[split.bufnr].modifiable = true
   local lines = vim.tbl_flatten({
     renderTitle(),
