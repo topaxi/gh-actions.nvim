@@ -21,6 +21,9 @@ local M = {
     workflows = {},
     workflow_runs = {},
   },
+  -- TODO: Maybe switch to codicons via nerdfont
+  --       https://microsoft.github.io/vscode-codicons/dist/codicon.html
+  --       https://www.nerdfonts.com/cheat-sheet
   icons = {
     conclusion = {
       success = "✓",
