@@ -9,7 +9,8 @@ local M = {
 }
 
 ---@class GhActionsOptions
----@field refresh_interval integer in seconds
+---@field refresh_interval? integer in seconds
+---@field ui? GhActionsRenderOptions
 
 ---@param opts? GhActionsOptions
 function M.setup(opts)
@@ -20,6 +21,8 @@ function M.setup(opts)
   M.setup_called = true
 
   M.refresh_interval = opts.refresh_interval or M.refresh_interval
+
+  ui.setup(opts.ui)
 
   vim.api.nvim_create_user_command("GhActions", M.open, {})
 end

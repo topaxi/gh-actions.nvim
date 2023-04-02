@@ -21,19 +21,19 @@ local M = {
     workflows = {},
     workflow_runs = {},
   },
-}
-
-local conclusion_icon_map = {
-  success = "✓",
-  failure = "X",
-  cancelled = "⊘",
-}
-
-local status_icon_map = {
-  pending = "●",
-  requested = "●",
-  waiting = "●",
-  in_progress = "●",
+  icons = {
+    conclusion = {
+      success = "✓",
+      failure = "X",
+      cancelled = "⊘",
+    },
+    status = {
+      pending = "●",
+      requested = "●",
+      waiting = "●",
+      in_progress = "●",
+    },
+  },
 }
 
 ---@param run GhWorkflowRun
@@ -44,10 +44,10 @@ local function get_workflow_run_icon(run)
   end
 
   if run.status == "completed" then
-    return conclusion_icon_map[run.conclusion] or run.conclusion
+    return M.icons.conclusion[run.conclusion] or run.conclusion
   end
 
-  return status_icon_map[run.status] or "?"
+  return M.icons.status[run.status] or "?"
 end
 
 ---@param runs GhWorkflowRun[]
@@ -81,7 +81,7 @@ local function renderWorkflows(workflows, workflow_runs)
   for _, workflow in ipairs(workflows) do
     local runs = workflow_runs_by_workflow_id[workflow.id] or {}
 
-    -- TODO Render ⚡️ if workflow has workflow dispatch
+    -- TODO Render ⚡️ or ✨ if workflow has workflow dispatch
     table.insert(lines, string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name))
 
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
@@ -131,6 +131,16 @@ function M.update_state(fn)
   M.render_state = fn(M.render_state) or M.render_state
 
   M.render()
+end
+
+---@class GhActionsRenderOptions
+---@field icons? { conclusion?: table, status?: table }
+
+---@param render_options? GhActionsRenderOptions
+function M.setup(render_options)
+  render_options = render_options or {}
+
+  M.icons = vim.tbl_deep_extend("force", {}, M.icons, render_options.icons or {})
 end
 
 function M.open()
