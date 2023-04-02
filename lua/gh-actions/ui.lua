@@ -26,6 +26,7 @@ local M = {
 local conclusion_icon_map = {
   success = "✓",
   failure = "X",
+  cancelled = "󰂭",
 }
 
 local status_icon_map = {
