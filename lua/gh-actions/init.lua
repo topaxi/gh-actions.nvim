@@ -31,6 +31,8 @@ end
 --     then fetch runs for a single workflow (tabs/expandable)
 --     Maybe periodically fetch all workflow runs to update
 --     "toplevel" workflow states
+--TODO Maybe send lsp progress events when fetching, to interact
+--     with fidget.nvim
 local function fetch_data()
   local repo = gh.get_current_repository()
 
