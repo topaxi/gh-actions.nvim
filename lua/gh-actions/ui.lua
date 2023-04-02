@@ -5,6 +5,7 @@ local split = Split({
   position = "right",
   size = 60,
   win_options = {
+    wrap = false,
     number = false,
     foldlevel = nil,
     foldcolumn = "0",
