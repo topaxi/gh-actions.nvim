@@ -24,4 +24,20 @@ function M.debounced(debounced_fn)
   end
 end
 
+---@param path string
+---@return string|nil
+function M.read_file(path)
+  local f = io.open(path, "r")
+
+  if not f then
+    return nil
+  end
+
+  local content = f:read("*all")
+
+  f:close()
+
+  return content
+end
+
 return M

@@ -1,5 +1,7 @@
 local curl = require("plenary.curl")
 local job = require("plenary.job")
+local yaml = require("gh-actions-vendor.yaml")
+local utils = require("gh-actions.utils")
 
 local M = {}
 
@@ -22,18 +24,12 @@ end
 
 ---@return string|nil
 local function read_gh_hosts_token()
-  -- TODO: Can we not depend on `yq` for parsing yml?
-  local yq = job:new({
-    command = "yq",
-    args = { "-o", "json", vim.fn.expand("$HOME/.config/gh/hosts.yml") },
-  })
+  local ghHostsConfigFile = vim.fn.expand("$HOME/.config/gh/hosts.yml")
+  local ghHostsYaml = utils.read_file(ghHostsConfigFile) or ""
+  local ghHostsConfig = yaml.eval(ghHostsYaml)
+  local token = ghHostsConfig and ghHostsConfig["github.com"].oauth_token
 
-  yq:sync()
-
-  local jsonStr = table.concat(yq:result(), "\n")
-  local ghHostsConfig = vim.json.decode(jsonStr)
-
-  return ghHostsConfig and ghHostsConfig["github.com"].oauth_token
+  return token
 end
 
 ---@return string
