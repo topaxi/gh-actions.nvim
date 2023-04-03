@@ -5,9 +5,7 @@ local utils = require("gh-actions.utils")
 
 local M = {}
 
----TODO instead of invoking git, we could parse the remote ourselves
----@param repository_dir? string
-function M.get_current_repository(repository_dir)
+function M.get_current_repository()
   -- 1. get git dir
   -- 2. get current branch
   -- 3. get origin of branch
