@@ -1,0 +1,8 @@
+github.example.com:
+  user: etopaxi
+  oauth_token: etopaxitesttoken
+  git_protocol: ssh
+github.com:
+  user: topaxi
+  oauth_token: topaxitesttoken
+  git_protocol: https

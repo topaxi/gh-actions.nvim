@@ -22,20 +22,23 @@ function M.get_current_repository(repository_dir)
   return table.concat(gh:result(), "")
 end
 
+---@param config_file? string
 ---@return string|nil
-local function read_gh_hosts_token()
-  local ghHostsConfigFile = vim.fn.expand("$HOME/.config/gh/hosts.yml")
-  local ghHostsYaml = utils.read_file(ghHostsConfigFile) or ""
+local function read_gh_hosts_token(config_file)
+  config_file = vim.fn.expand(config_file or "$HOME/.config/gh/hosts.yml")
+
+  local ghHostsYaml = utils.read_file(config_file) or ""
   local ghHostsConfig = yaml.eval(ghHostsYaml)
   local token = ghHostsConfig and ghHostsConfig["github.com"].oauth_token
 
   return token
 end
 
+---@param config_file? string
 ---@return string
-local function get_github_token()
+function M.get_github_token(config_file)
   return vim.env.GITHUB_TOKEN
-    or read_gh_hosts_token()
+    or read_gh_hosts_token(config_file)
     -- TODO: We could also ask for the token here via nui
     or assert(nil, "No GITHUB_TOKEN found in env and no gh cli config found")
 end
@@ -49,7 +52,7 @@ function M.fetch(path, opts)
     string.format("https://api.github.com%s", path),
     vim.tbl_deep_extend("force", opts, {
       headers = {
-        Authorization = string.format("Bearer %s", get_github_token()),
+        Authorization = string.format("Bearer %s", M.get_github_token()),
       },
     })
   )
