@@ -114,10 +114,27 @@ function M.get_workflow_run(line)
   end
 end
 
+---@class TextSegment
+---@field str string
+---@field hl string
+
+---@alias Line TextSegment[]
+
+---@param line Line
+local function get_line_str(line)
+  return table.concat(
+    vim.tbl_map(function(segment)
+      return segment.str
+    end, line),
+    ""
+  )
+end
+
 ---@param workflows GhWorkflow[]
 ---@param workflow_runs GhWorkflowRun[]
 ---@return table
 local function renderWorkflows(workflows, workflow_runs)
+  ---@type Line[]
   local lines = {}
   local workflow_runs_by_workflow_id = group_by_workflow(workflow_runs)
   local currentline = 2
@@ -135,7 +152,7 @@ local function renderWorkflows(workflows, workflow_runs)
     })
 
     -- TODO Render ⚡️ or ✨ if workflow has workflow dispatch
-    table.insert(lines, string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name))
+    table.insert(lines, { { str = string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name) } })
 
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
     -- runs on opening the split. I guess we do want to have this configurable.
@@ -149,15 +166,16 @@ local function renderWorkflows(workflows, workflow_runs)
         to = currentline,
       })
 
-      table.insert(
-        lines,
-        string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", ""))
-      )
+      table.insert(lines, {
+        {
+          str = string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", "")),
+        },
+      })
     end
 
     if #runs > 0 then
       currentline = currentline + 1
-      table.insert(lines, "")
+      table.insert(lines, { { str = "" } })
     end
   end
 
@@ -178,7 +196,7 @@ function M.render()
   vim.bo[split.bufnr].modifiable = true
   local lines = vim.tbl_flatten({
     renderTitle(),
-    renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs),
+    vim.tbl_map(get_line_str, renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)),
   })
 
   vim.api.nvim_buf_set_lines(split.bufnr, 0, -1, false, lines)
