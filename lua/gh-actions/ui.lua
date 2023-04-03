@@ -85,7 +85,6 @@ local function renderTitle()
 end
 
 local function get_current_line(line)
-  print(vim.inspect(split))
   return line or vim.api.nvim_win_get_cursor(split.winid)[1]
 end
 
@@ -121,7 +120,7 @@ end
 local function renderWorkflows(workflows, workflow_runs)
   local lines = {}
   local workflow_runs_by_workflow_id = group_by_workflow(workflow_runs)
-  local currentline = 3
+  local currentline = 2
 
   for _, workflow in ipairs(workflows) do
     currentline = currentline + 1

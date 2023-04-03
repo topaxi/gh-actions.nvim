@@ -61,10 +61,15 @@ function M.open()
   ui.open()
   ui.split:map("n", "q", M.close, { noremap = true })
   ui.split:map("n", "<cr>", function()
-    print("Workflow:")
-    print(vim.inspect(ui.get_workflow()))
-    print("Workflow Run:")
-    print(vim.inspect(ui.get_workflow_run()))
+    local workflow = ui.get_workflow()
+    local workflow_run = ui.get_workflow_run()
+
+    if workflow then
+      print(string.format("Workflow: %s", workflow.name))
+    end
+    if workflow_run then
+      print(string.format("Workflow run: %s", workflow_run.head_commit.message))
+    end
   end, { noremap = true })
 
   M.timer = vim.loop.new_timer()
