@@ -21,6 +21,7 @@ local split = Split({
 ---@field to integer
 
 local M = {
+  ns = vim.api.nvim_create_namespace("gh-actions"),
   split = split,
   render_state = {
     repo = nil,
@@ -130,6 +131,32 @@ local function get_line_str(line)
   )
 end
 
+---@param str string
+---@return string
+local function upper_first(str)
+  return str:sub(1, 1):upper() .. str:sub(2)
+end
+
+---@param run GhWorkflowRun
+---@return string|nil
+local function get_workflow_run_icon_highlight(run)
+  if not run then
+    return nil
+  end
+
+  if run.status == "completed" then
+    return "GhActionsRun" .. upper_first(run.conclusion)
+  end
+
+  return "GhActionsRun" .. upper_first(run.status)
+end
+
+---@param run GhWorkflowRun
+---@return TextSegment
+local function renderWorkflowRunIcon(run)
+  return { str = get_workflow_run_icon(run), hl = get_workflow_run_icon_highlight(run) }
+end
+
 ---@param workflows GhWorkflow[]
 ---@param workflow_runs GhWorkflowRun[]
 ---@return table
@@ -152,7 +179,11 @@ local function renderWorkflows(workflows, workflow_runs)
     })
 
     -- TODO Render ⚡️ or ✨ if workflow has workflow dispatch
-    table.insert(lines, { { str = string.format("%s %s", get_workflow_run_icon(runs[1]), workflow.name) } })
+    table.insert(lines, {
+      renderWorkflowRunIcon(runs[1]),
+      { str = " " },
+      { str = workflow.name },
+    })
 
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
     -- runs on opening the split. I guess we do want to have this configurable.
@@ -167,9 +198,10 @@ local function renderWorkflows(workflows, workflow_runs)
       })
 
       table.insert(lines, {
-        {
-          str = string.format("  %s %s", get_workflow_run_icon(run), run.head_commit.message:gsub("\n.*", "")),
-        },
+        { str = "  " },
+        renderWorkflowRunIcon(run),
+        { str = " " },
+        { str = run.head_commit.message:gsub("\n.*", "") },
       })
     end
 
@@ -194,12 +226,49 @@ function M.render()
   end
 
   vim.bo[split.bufnr].modifiable = true
+
+  local workflowLines = renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)
+
   local lines = vim.tbl_flatten({
     renderTitle(),
-    vim.tbl_map(get_line_str, renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)),
+    vim.tbl_map(get_line_str, workflowLines),
   })
 
   vim.api.nvim_buf_set_lines(split.bufnr, 0, -1, false, lines)
+  vim.api.nvim_buf_clear_namespace(split.bufnr, M.ns, 0, -1)
+
+  for l, line in ipairs(workflowLines) do
+    local col = 0
+
+    for _, segment in ipairs(line) do
+      local width = vim.fn.strlen(segment.str)
+
+      local extmark = segment.hl
+      if extmark then
+        if type(extmark) == "string" then
+          extmark = { hl_group = extmark, end_col = col + width }
+        end
+
+        local extmark_col = extmark.col or col
+        extmark.col = nil
+        ---TODO: Remove "+ 2" once we refactor title and workflow rendering into one "flow"
+        local line_nr = l - 1 + 2
+        local ok = pcall(vim.api.nvim_buf_set_extmark, split.bufnr, M.ns, line_nr, extmark_col, extmark)
+        if not ok then
+          vim.notify("Failed to set extmark. Please report a bug with this info:\n" .. vim.inspect({
+            segment = segment,
+            line_nr = line_nr,
+            line = line,
+            extmark_col = extmark_col,
+            extmark = extmark,
+          }))
+        end
+      end
+
+      col = col + width
+    end
+  end
+
   vim.bo[split.bufnr].modifiable = false
 end
 
@@ -224,6 +293,13 @@ function M.setup(render_options)
   render_options = render_options or {}
 
   M.icons = vim.tbl_deep_extend("force", {}, M.icons, render_options.icons or {})
+
+  vim.api.nvim_set_hl(0, "GhActionsRunSuccess", { link = "LspDiagnosticsVirtualTextHint" })
+  vim.api.nvim_set_hl(0, "GhActionsRunFailure", { link = "LspDiagnosticsVirtualTextError" })
+  vim.api.nvim_set_hl(0, "GhActionsRunPending", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunRequested", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunWaiting", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIn_progress", { link = "LspDiagnosticsVirtualTextWarning" })
 end
 
 function M.open()
