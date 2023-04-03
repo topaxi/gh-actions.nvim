@@ -65,10 +65,10 @@ function M.open()
     local workflow_run = ui.get_workflow_run()
 
     if workflow then
-      print(string.format("Workflow: %s", workflow.name))
+      vim.notify(string.format("Workflow: %s", workflow.name))
     end
     if workflow_run then
-      print(string.format("Workflow run: %s", workflow_run.head_commit.message))
+      vim.notify(string.format("Workflow run: %s", workflow_run.head_commit.message))
     end
   end, { noremap = true })
 
