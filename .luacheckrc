@@ -6,10 +6,8 @@ read_globals = {
     other_fields = true,
     fields = {
       bo = {
+        read_only = false,
         other_fields = true,
-        fields = {
-          other_fields = true,
-        },
       },
     },
   },
