@@ -20,7 +20,7 @@ function M.get_current_repository(repository_dir)
   return table.concat(gh:result(), "")
 end
 
----@return string
+---@return string|nil
 local function read_gh_hosts_token()
   -- TODO: Can we not depend on `yq` for parsing yml?
   local yq = job:new({
@@ -33,7 +33,7 @@ local function read_gh_hosts_token()
   local jsonStr = table.concat(yq:result(), "\n")
   local ghHostsConfig = vim.json.decode(jsonStr)
 
-  return ghHostsConfig["github.com"].oauth_token
+  return ghHostsConfig and ghHostsConfig["github.com"].oauth_token
 end
 
 ---@return string
