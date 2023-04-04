@@ -2,6 +2,7 @@ local Split = require("nui.split")
 local utils = require("gh-actions.utils")
 
 local split = Split({
+  relative = "editor",
   position = "right",
   size = 60,
   win_options = {
