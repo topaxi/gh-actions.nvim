@@ -1,3 +1,4 @@
+local git = require("gh-actions.git")
 local gh = require("gh-actions.github")
 local ui = require("gh-actions.ui")
 local utils = require("gh-actions.utils")
@@ -82,9 +83,11 @@ function M.open()
       ---@type string
       local repo = ui.render_state.repo
 
-      -- TODO get current ref or show an input with the default branch or
-      --      current ref preselected
-      gh.dispatch_workflow(repo, workflow.id, "main", {
+      -- TODO should we get current ref instead or show an input with the
+      --      default branch or current ref preselected?
+      local default_branch = git.get_default_branch()
+
+      gh.dispatch_workflow(repo, workflow.id, default_branch, {
         callback = function()
           utils.delay(2000, function()
             gh.get_workflow_runs(repo, workflow.id, 5, {

@@ -2,11 +2,6 @@ local job = require("plenary.job")
 
 local M = {}
 
----@param s string
-local function trim(s)
-  return s:match("^()%s*$") and "" or s:match("^%s*(.*%S)")
-end
-
 function M.get_current_branch()
   local gitJob = job:new({
     command = "git",
@@ -15,8 +10,23 @@ function M.get_current_branch()
 
   gitJob:sync()
 
-  -- TOOD: Do we need to trim?
-  return trim(table.concat(gitJob:result(), ""))
+  return table.concat(gitJob:result(), "")
+end
+
+function M.get_default_branch()
+  local gitJob = job:new({
+    command = "git",
+    args = { "remote", "show", "origin" },
+  })
+
+  gitJob:sync()
+
+  -- luacheck: ignore
+  for match in table.concat(gitJob:result(), ""):gmatch("HEAD branch: (%a+)") do
+    return match
+  end
+
+  return "main"
 end
 
 return M
