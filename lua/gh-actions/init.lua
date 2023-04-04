@@ -86,11 +86,7 @@ function M.open()
       --      current ref preselected
       gh.dispatch_workflow(repo, workflow.id, "main", {
         callback = function()
-          vim.notify("dispatched workflow")
-
           utils.delay(2000, function()
-            vim.notify("updating workflow runs")
-
             gh.get_workflow_runs(repo, workflow.id, 5, {
               callback = function(workflow_runs)
                 ui.update_state(function(state)
@@ -98,7 +94,6 @@ function M.open()
                     return run.id
                   end, { unpack(workflow_runs), unpack(state.workflow_runs) })
                 end)
-                vim.notify("updated workflow runs")
               end,
             })
           end)
