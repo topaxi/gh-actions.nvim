@@ -9,6 +9,10 @@ read_globals = {
         read_only = false,
         other_fields = true,
       },
+      env = {
+        read_only = false,
+        other_fields = true,
+      },
     },
   },
   "describe",
