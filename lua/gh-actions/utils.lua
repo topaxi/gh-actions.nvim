@@ -40,4 +40,24 @@ function M.read_file(path)
   return content
 end
 
+---@generic T : table
+---@param fn any
+---@param tbl T
+---@return T
+function M.uniq(fn, tbl)
+  local set = {}
+  local unique_table = {}
+
+  for _, v in ipairs(tbl) do
+    local id = fn(v)
+
+    if not set[id] then
+      table.insert(unique_table, v)
+      set[id] = true
+    end
+  end
+
+  return unique_table
+end
+
 return M

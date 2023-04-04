@@ -1,5 +1,6 @@
 local gh = require("gh-actions.github")
 local ui = require("gh-actions.ui")
+local utils = require("gh-actions.utils")
 
 local M = {
   setup_called = false,
@@ -77,9 +78,25 @@ function M.open()
     local workflow = ui.get_workflow()
 
     if workflow then
+      -- TODO: Probably better to not rely on render_state repo here 🤔
+      ---@type string
+      local repo = ui.render_state.repo
+
       -- TODO get current ref or show an input with the default branch or
       --      current ref preselected
-      gh.dispatch_workflow(ui.render_state.repo, workflow.id, "main")
+      gh.dispatch_workflow(repo, workflow.id, "main", {
+        callback = function()
+          gh.get_workflow_runs(repo, workflow.id, 5, {
+            callback = function(workflow_runs)
+              ui.update_state(function(state)
+                state.workflow_runs = utils.uniq(function(run)
+                  return run.id
+                end, { unpack(workflow_runs), unpack(state.workflow_runs) })
+              end)
+            end,
+          })
+        end,
+      })
     end
   end, { noremap = true })
 

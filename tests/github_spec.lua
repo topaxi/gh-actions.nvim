@@ -4,6 +4,6 @@ describe("get_github_token", function()
   it("it should read from gh/hosts.yml", function()
     local token = gh.get_github_token("tests/fixtures/gh_hosts.yml")
 
-    assert.are.same(token, "topaxitesttoken")
+    assert.are.same("topaxitesttoken", token)
   end)
 end)

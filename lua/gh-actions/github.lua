@@ -45,6 +45,7 @@ end
 ---@param opts? table
 function M.fetch(path, opts)
   opts = opts or {}
+  opts.callback = opts.callback and vim.schedule_wrap(opts.callback)
 
   return curl[opts.method or "get"](
     string.format("https://api.github.com%s", path),
@@ -181,9 +182,6 @@ function M.dispatch_workflow(repo, workflow_id, ref, opts)
     vim.tbl_deep_extend("force", {}, opts, {
       method = "post",
       body = vim.json.encode(vim.tbl_deep_extend("force", {}, opts.body or {}, { ref = ref })),
-      callback = function(response)
-        print(vim.inspect(response))
-      end,
     })
   )
 end
