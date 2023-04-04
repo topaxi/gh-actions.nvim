@@ -46,7 +46,7 @@ end
 function M.fetch(path, opts)
   opts = opts or {}
 
-  return curl.get(
+  return curl[opts.method or "get"](
     string.format("https://api.github.com%s", path),
     vim.tbl_deep_extend("force", opts, {
       headers = {
@@ -165,6 +165,23 @@ function M.get_workflow_runs(repo, workflow_id, per_page, opts)
     string.format("/repos/%s/actions/workflows/%d/runs", repo, workflow_id),
     vim.tbl_deep_extend("force", { query = { per_page = per_page } }, opts, {
       callback = process_workflow_runs_response(opts),
+    })
+  )
+end
+
+---@param repo string
+---@param workflow_id integer
+---@param opts? table
+function M.dispatch_workflow(repo, workflow_id, opts)
+  opts = opts or {}
+
+  return M.fetch(
+    string.format("/repos/%s/actions/workflows/%d/dispatches", repo, workflow_id),
+    vim.tbl_deep_extend("force", {}, opts, {
+      method = "post",
+      callback = function(response)
+        print(vim.inspect(response))
+      end,
     })
   )
 end

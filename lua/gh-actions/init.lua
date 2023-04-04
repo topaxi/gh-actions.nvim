@@ -60,6 +60,7 @@ end
 function M.open()
   ui.open()
   ui.split:map("n", "q", M.close, { noremap = true })
+
   ui.split:map("n", "<cr>", function()
     local workflow = ui.get_workflow()
     local workflow_run = ui.get_workflow_run()
@@ -69,6 +70,14 @@ function M.open()
     end
     if workflow_run then
       vim.notify(string.format("Workflow run: %s", workflow_run.head_commit.message))
+    end
+  end, { noremap = true })
+
+  ui.split:map("n", "r", function()
+    local workflow = ui.get_workflow()
+
+    if workflow then
+      gh.dispatch_workflow(ui.render_state.repo, workflow.id)
     end
   end, { noremap = true })
 
