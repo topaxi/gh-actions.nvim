@@ -60,4 +60,17 @@ function M.uniq(fn, tbl)
   return unique_table
 end
 
+function M.delay(ms, fn)
+  local timer = vim.loop.new_timer()
+
+  if not timer then
+    return
+  end
+
+  timer:start(ms, 0, function()
+    timer:close()
+    vim.schedule(fn)
+  end)
+end
+
 return M
