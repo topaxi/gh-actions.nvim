@@ -4,7 +4,7 @@ local ui = require("gh-actions.ui")
 local M = {
   setup_called = false,
   init_root = "",
-  refresh_interval = 10 * 100,
+  refresh_interval = 10,
   timer = nil,
 }
 
