@@ -73,7 +73,7 @@ function M.open()
     end
   end, { noremap = true })
 
-  ui.split:map("n", "r", function()
+  ui.split:map("n", "d", function()
     local workflow = ui.get_workflow()
 
     if workflow then
