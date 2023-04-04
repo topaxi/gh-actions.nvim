@@ -145,10 +145,10 @@ local function get_workflow_run_icon_highlight(run)
   end
 
   if run.status == "completed" then
-    return "GhActionsRun" .. upper_first(run.conclusion)
+    return "GhActionsRunIcon" .. upper_first(run.conclusion)
   end
 
-  return "GhActionsRun" .. upper_first(run.status)
+  return "GhActionsRunIcon" .. upper_first(run.status)
 end
 
 ---@param run GhWorkflowRun
@@ -294,12 +294,13 @@ function M.setup(render_options)
 
   M.icons = vim.tbl_deep_extend("force", {}, M.icons, render_options.icons or {})
 
-  vim.api.nvim_set_hl(0, "GhActionsRunSuccess", { link = "LspDiagnosticsVirtualTextHint" })
-  vim.api.nvim_set_hl(0, "GhActionsRunFailure", { link = "LspDiagnosticsVirtualTextError" })
-  vim.api.nvim_set_hl(0, "GhActionsRunPending", { link = "LspDiagnosticsVirtualTextWarning" })
-  vim.api.nvim_set_hl(0, "GhActionsRunRequested", { link = "LspDiagnosticsVirtualTextWarning" })
-  vim.api.nvim_set_hl(0, "GhActionsRunWaiting", { link = "LspDiagnosticsVirtualTextWarning" })
-  vim.api.nvim_set_hl(0, "GhActionsRunIn_progress", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIconSuccess", { link = "LspDiagnosticsVirtualTextHint" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIconFailure", { link = "LspDiagnosticsVirtualTextError" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIconPending", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIconRequested", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIconWaiting", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIconIn_progress", { link = "LspDiagnosticsVirtualTextWarning" })
+  vim.api.nvim_set_hl(0, "GhActionsRunIconCancelled", { link = "Comment" })
 end
 
 function M.open()
