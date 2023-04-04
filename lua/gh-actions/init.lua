@@ -77,7 +77,9 @@ function M.open()
     local workflow = ui.get_workflow()
 
     if workflow then
-      gh.dispatch_workflow(ui.render_state.repo, workflow.id)
+      -- TODO get current ref or show an input with the default branch or
+      --      current ref preselected
+      gh.dispatch_workflow(ui.render_state.repo, workflow.id, "main")
     end
   end, { noremap = true })
 

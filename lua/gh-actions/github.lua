@@ -171,14 +171,16 @@ end
 
 ---@param repo string
 ---@param workflow_id integer
+---@param ref string
 ---@param opts? table
-function M.dispatch_workflow(repo, workflow_id, opts)
+function M.dispatch_workflow(repo, workflow_id, ref, opts)
   opts = opts or {}
 
   return M.fetch(
     string.format("/repos/%s/actions/workflows/%d/dispatches", repo, workflow_id),
     vim.tbl_deep_extend("force", {}, opts, {
       method = "post",
+      body = vim.json.encode(vim.tbl_deep_extend("force", {}, opts.body or {}, { ref = ref })),
       callback = function(response)
         print(vim.inspect(response))
       end,
