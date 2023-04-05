@@ -186,4 +186,52 @@ function M.dispatch_workflow(repo, workflow_id, ref, opts)
   )
 end
 
+---@class GhWorkflowRunJobStep
+---@field name string
+---@field status string
+---@field conclusion string
+---@field number number
+
+---@class GhWorkflowRunJob
+---@field id number
+---@field run_id number
+---@field status string
+---@field conclusion string
+---@field name string
+---@field steps GhWorkflowRunJobStep[]
+
+---@class GhWorkflowRunJobsResponse
+---@field total_count number
+---@field jobs GhWorkflowRunJob[]
+
+---@param repo string
+---@param workflow_run_id integer
+---@param per_page? integer
+---@param opts? table
+function M.get_workflow_run_jobs(repo, workflow_run_id, per_page, opts)
+  opts = opts or {}
+
+  return M.fetch(
+    string.format("/repos/%s/actions/runs/%d/runs", repo, workflow_run_id),
+    vim.tbl_deep_extend("force", { query = { per_page = per_page } }, opts, {
+      callback = function(response)
+        if not response then
+          return {}
+        end
+
+        ---@type GhWorkflowRunJobsResponse | nil
+        local responseData = vim.json.decode(response.body)
+
+        local ret = responseData and responseData.jobs or {}
+
+        if opts.callback then
+          return opts.callback(ret)
+        else
+          return ret
+        end
+      end,
+    })
+  )
+end
+
 return M
