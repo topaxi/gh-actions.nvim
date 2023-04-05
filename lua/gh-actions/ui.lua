@@ -1,5 +1,5 @@
 local Split = require("nui.split")
-local utils = require("gh-actions.utils")
+local store = require("gh-actions.store")
 
 local split = Split({
   relative = "editor",
@@ -24,11 +24,6 @@ local split = Split({
 local M = {
   ns = vim.api.nvim_create_namespace("gh-actions"),
   split = split,
-  render_state = {
-    repo = nil,
-    workflows = {},
-    workflow_runs = {},
-  },
   -- TODO: While rendering, store row/line (start line,end line) and kind
   ---@type GhActionsRenderLocation[]
   locations = {},
@@ -87,12 +82,13 @@ local function group_by_workflow(runs)
   return m
 end
 
-local function renderTitle()
-  if not M.render_state.repo then
+---@param state GhActionsState
+local function renderTitle(state)
+  if not state.repo then
     return { "Github Workflows", "" }
   end
 
-  return { string.format("Github Workflows for %s", M.render_state.repo), "" }
+  return { string.format("Github Workflows for %s", state.repo), "" }
 end
 
 local function get_current_line(line)
@@ -228,7 +224,8 @@ local function is_visible()
   return split.bufnr ~= nil and vim.bo[split.bufnr] ~= nil
 end
 
-function M.render()
+---@param state GhActionsState
+function M.render(state)
   M.locations = {}
 
   if not is_visible() then
@@ -237,10 +234,10 @@ function M.render()
 
   vim.bo[split.bufnr].modifiable = true
 
-  local workflowLines = renderWorkflows(M.render_state.workflows, M.render_state.workflow_runs)
+  local workflowLines = renderWorkflows(state.workflows, state.workflow_runs)
 
   local lines = vim.tbl_flatten({
-    renderTitle(),
+    renderTitle(state),
     vim.tbl_map(get_line_str, workflowLines),
   })
 
@@ -282,19 +279,6 @@ function M.render()
   vim.bo[split.bufnr].modifiable = false
 end
 
-M.render = utils.debounced(vim.schedule_wrap(M.render))
-
----@class GhActionsRenderState
----@field workflows GhWorkflow[]
----@field workflow_runs GhWorkflowRun[]
-
----@param fn fun(render_state: GhActionsRenderState): GhActionsRenderState|nil
-function M.update_state(fn)
-  M.render_state = fn(M.render_state) or M.render_state
-
-  M.render()
-end
-
 ---@class GhActionsRenderOptions
 ---@field icons? { conclusion?: table, status?: table }
 
@@ -312,11 +296,13 @@ end
 function M.open()
   split:mount()
 
-  M.render()
+  store.on_update(M.render)
+  M.render(store.get_state())
 end
 
 function M.close()
   split:unmount()
+  store.off_update(M.render)
 end
 
 return M

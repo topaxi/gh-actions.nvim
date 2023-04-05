@@ -1,3 +1,4 @@
+local store = require("gh-actions.store")
 local git = require("gh-actions.git")
 local gh = require("gh-actions.github")
 local ui = require("gh-actions.ui")
@@ -38,13 +39,13 @@ end
 local function fetch_data()
   local repo = gh.get_current_repository()
 
-  ui.update_state(function(state)
+  store.update_state(function(state)
     state.repo = repo
   end)
 
   gh.get_workflows(repo, {
     callback = function(workflows)
-      ui.update_state(function(state)
+      store.update_state(function(state)
         state.workflows = workflows
       end)
     end,
@@ -52,7 +53,7 @@ local function fetch_data()
 
   gh.get_repository_workflow_runs(repo, 100, {
     callback = function(workflow_runs)
-      ui.update_state(function(state)
+      store.update_state(function(state)
         state.workflow_runs = workflow_runs
       end)
     end,
@@ -92,7 +93,7 @@ function M.open()
           utils.delay(2000, function()
             gh.get_workflow_runs(repo, workflow.id, 5, {
               callback = function(workflow_runs)
-                ui.update_state(function(state)
+                store.update_state(function(state)
                   state.workflow_runs = utils.uniq(function(run)
                     return run.id
                   end, { unpack(workflow_runs), unpack(state.workflow_runs) })
