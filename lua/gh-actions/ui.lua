@@ -163,10 +163,12 @@ local function renderWorkflowRunIcon(run)
   return { str = get_workflow_run_icon(run), hl = get_workflow_run_icon_highlight(run) }
 end
 
----@param workflows GhWorkflow[]
----@param workflow_runs GhWorkflowRun[]
+---@param state GhActionsState
 ---@return table
-local function renderWorkflows(workflows, workflow_runs)
+local function renderWorkflows(state)
+  local workflows = state.workflows
+  local workflow_runs = state.workflow_runs
+
   ---@type Line[]
   local lines = {}
   local workflow_runs_by_workflow_id = group_by_workflow(workflow_runs)
@@ -189,6 +191,12 @@ local function renderWorkflows(workflows, workflow_runs)
       renderWorkflowRunIcon(runs[1]),
       { str = " " },
       { str = workflow.name },
+      {
+        str = state.workflow_configs[workflow.id]
+            and state.workflow_configs[workflow.id].config.on.workflow_dispatch
+            and " ⚡️"
+          or "",
+      },
     })
 
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
@@ -234,7 +242,7 @@ function M.render(state)
 
   vim.bo[split.bufnr].modifiable = true
 
-  local workflowLines = renderWorkflows(state.workflows, state.workflow_runs)
+  local workflowLines = renderWorkflows(state)
 
   local lines = vim.tbl_flatten({
     renderTitle(state),

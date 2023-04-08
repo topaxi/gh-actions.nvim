@@ -234,4 +234,21 @@ function M.get_workflow_run_jobs(repo, workflow_run_id, per_page, opts)
   )
 end
 
+---TODO lua-yaml is not able to fully parse most yaml files..
+---@param path string
+---@return table
+function M.get_workflow_config(path)
+  path = vim.fn.expand(path)
+
+  local workflow_yaml = utils.read_file(path) or ""
+  local config = {
+    on = {
+      workflow_dispatch = workflow_yaml:find("workflow_dispatch"),
+    },
+  }
+
+  ---@cast config table
+  return config
+end
+
 return M

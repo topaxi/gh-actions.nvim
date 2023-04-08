@@ -60,6 +60,30 @@ local function fetch_data()
   })
 end
 
+local function now()
+  return os.time(os.date("!*t"))
+end
+
+local WORKFLOW_CONFIG_CACHE_TTL_S = 10
+
+---TODO We should run this after fetching the workflows instead of within the state update event
+---@param state GhActionsState
+function M.update_workflow_configs(state)
+  local n = now()
+
+  for _, workflow in ipairs(state.workflows) do
+    if
+      not state.workflow_configs[workflow.id]
+      or (n - state.workflow_configs[workflow.id].last_read) > WORKFLOW_CONFIG_CACHE_TTL_S
+    then
+      state.workflow_configs[workflow.id] = {
+        last_read = n,
+        config = gh.get_workflow_config(workflow.path),
+      }
+    end
+  end
+end
+
 function M.open()
   ui.open()
   ui.split:map("n", "q", M.close, { noremap = true })
@@ -108,6 +132,9 @@ function M.open()
 
   M.timer = vim.loop.new_timer()
   M.timer:start(0, M.refresh_interval * 1000, vim.schedule_wrap(fetch_data))
+
+  --TODO: This might get called after rendering..
+  store.on_update(M.update_workflow_configs)
 end
 
 function M.close()
@@ -115,6 +142,7 @@ function M.close()
   M.timer:stop()
   M.timer:close()
   M.timer = nil
+  store.off_update(M.update_workflow_configs)
 end
 
 return M
