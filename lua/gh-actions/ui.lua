@@ -204,41 +204,43 @@ local function renderWorkflows(state)
         { str = run.head_commit.message:gsub("\n.*", "") },
       })
 
-      for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
-        currentline = currentline + 1
-        local jobline = currentline
-
-        table.insert(lines, {
-          { str = "    " },
-          renderWorkflowRunIcon(job),
-          { str = " " },
-          { str = job.name },
-        })
-
-        for _, step in ipairs(job.steps) do
+      if run.conclusion ~= "success" then
+        for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
           currentline = currentline + 1
-
-          table.insert(M.locations, {
-            kind = "workflow_step",
-            value = job,
-            from = currentline,
-            to = currentline,
-          })
+          local jobline = currentline
 
           table.insert(lines, {
-            { str = "      " },
-            renderWorkflowRunIcon(step),
+            { str = "    " },
+            renderWorkflowRunIcon(job),
             { str = " " },
-            { str = step.name },
+            { str = job.name },
+          })
+
+          for _, step in ipairs(job.steps) do
+            currentline = currentline + 1
+
+            table.insert(M.locations, {
+              kind = "workflow_step",
+              value = job,
+              from = currentline,
+              to = currentline,
+            })
+
+            table.insert(lines, {
+              { str = "      " },
+              renderWorkflowRunIcon(step),
+              { str = " " },
+              { str = step.name },
+            })
+          end
+
+          table.insert(M.locations, {
+            kind = "workflow_job",
+            value = job,
+            from = currentline,
+            to = jobline,
           })
         end
-
-        table.insert(M.locations, {
-          kind = "workflow_job",
-          value = job,
-          from = currentline,
-          to = jobline,
-        })
       end
 
       table.insert(M.locations, {
