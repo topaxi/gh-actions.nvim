@@ -325,6 +325,8 @@ function M.render(state)
 end
 
 ---@class GhActionsRenderOptions
+---TODO: https://github.com/akinsho/toggleterm.nvim/blob/2e477f7ee8ee8229ff3158e3018a067797b9cd38/lua/toggleterm/colors.lua
+---@field shade_background boolean
 ---@field icons? { conclusion?: table, status?: table }
 
 ---@param render_options? GhActionsRenderOptions
