@@ -152,6 +152,11 @@ local function renderWorkflowRunIcon(run)
   return { str = get_workflow_run_icon(run), hl = get_workflow_run_icon_highlight(run) }
 end
 
+---@param location GhActionsRenderLocation
+local function append_location(location)
+  table.insert(M.locations, location)
+end
+
 ---@param state GhActionsState
 ---@return table
 local function renderWorkflows(state)
@@ -170,7 +175,7 @@ local function renderWorkflows(state)
     local runs = workflow_runs_by_workflow_id[workflow.id] or {}
     local runs_n = math.min(5, #runs)
 
-    table.insert(M.locations, {
+    append_location({
       kind = "workflow",
       value = workflow,
       from = currentline,
@@ -219,7 +224,7 @@ local function renderWorkflows(state)
           for _, step in ipairs(job.steps) do
             currentline = currentline + 1
 
-            table.insert(M.locations, {
+            append_location({
               kind = "workflow_step",
               value = job,
               from = currentline,
@@ -234,7 +239,7 @@ local function renderWorkflows(state)
             })
           end
 
-          table.insert(M.locations, {
+          append_location({
             kind = "workflow_job",
             value = job,
             from = currentline,
@@ -243,7 +248,7 @@ local function renderWorkflows(state)
         end
       end
 
-      table.insert(M.locations, {
+      append_location({
         kind = "workflow_run",
         value = run,
         from = runline,
