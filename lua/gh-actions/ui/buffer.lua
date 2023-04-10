@@ -75,7 +75,6 @@ function Buffer:render(bufnr)
 
         local extmark_col = extmark.col or col
         extmark.col = nil
-        ---TODO: Remove "+ 2" once we refactor title and workflow rendering into one "flow"
         local line_nr = l - 1
         local ok = pcall(vim.api.nvim_buf_set_extmark, bufnr, self.ns, line_nr, extmark_col, extmark)
         if not ok then
