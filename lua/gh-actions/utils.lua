@@ -73,4 +73,20 @@ function M.delay(ms, fn)
   end)
 end
 
+---@generic T
+---@param fn fun(value: T, key: number): number
+---@param tbl table<number, T>
+---@return table<number, T[]>
+function M.group_by(fn, tbl)
+  local m = {}
+
+  for k, v in ipairs(tbl) do
+    local key = fn(v, k)
+    m[key] = m[key] or {}
+    table.insert(m[key], v)
+  end
+
+  return m
+end
+
 return M

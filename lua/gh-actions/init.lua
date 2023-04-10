@@ -56,12 +56,27 @@ local function fetch_data()
       store.update_state(function(state)
         state.workflow_runs = workflow_runs
       end)
+
+      for _, run in ipairs(workflow_runs) do
+        --TODO this will not update runs which completed since the last update
+        if run.status ~= "completed" then
+          gh.get_workflow_run_jobs(repo, run.id, 20, {
+            callback = function(jobs)
+              store.update_state(function(state)
+                state.workflow_jobs[run.id] = jobs
+              end)
+            end,
+          })
+        end
+      end
     end,
   })
 end
 
 local function now()
-  return os.time(os.date("!*t"))
+  local date = os.date("!*t")
+  ---@cast date osdate
+  return os.time(date)
 end
 
 local WORKFLOW_CONFIG_CACHE_TTL_S = 10
@@ -104,9 +119,7 @@ function M.open()
     local workflow = ui.get_workflow()
 
     if workflow then
-      -- TODO: Probably better to not rely on render_state repo here 🤔
-      ---@type string
-      local repo = ui.render_state.repo
+      local repo = store.get_state().repo
 
       -- TODO should we get current ref instead or show an input with the
       --      default branch or current ref preselected?

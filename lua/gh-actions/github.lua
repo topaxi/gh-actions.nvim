@@ -117,7 +117,7 @@ end
 ---@field total_count number
 ---@field workflow_runs GhWorkflowRun[]
 
----@param opts? table
+---@param opts? { callback?: fun(workflow_runs: GhWorkflowRun[]): any }
 local function process_workflow_runs_response(opts)
   opts = opts or {}
 
@@ -143,7 +143,7 @@ end
 
 ---@param repo string
 ---@param per_page? integer
----@param opts? table
+---@param opts? { callback?: fun(workflow_runs: GhWorkflowRun[]): any }
 function M.get_repository_workflow_runs(repo, per_page, opts)
   opts = opts or {}
 
@@ -207,12 +207,12 @@ end
 ---@param repo string
 ---@param workflow_run_id integer
 ---@param per_page? integer
----@param opts? table
+---@param opts? { callback?: fun(workflow_runs: GhWorkflowRun[]): any }
 function M.get_workflow_run_jobs(repo, workflow_run_id, per_page, opts)
   opts = opts or {}
 
   return M.fetch(
-    string.format("/repos/%s/actions/runs/%d/runs", repo, workflow_run_id),
+    string.format("/repos/%s/actions/runs/%d/jobs", repo, workflow_run_id),
     vim.tbl_deep_extend("force", { query = { per_page = per_page } }, opts, {
       callback = function(response)
         if not response then

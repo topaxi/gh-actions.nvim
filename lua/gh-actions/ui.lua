@@ -1,5 +1,6 @@
 local Split = require("nui.split")
 local store = require("gh-actions.store")
+local utils = require("gh-actions.utils")
 
 local split = Split({
   relative = "editor",
@@ -39,6 +40,7 @@ local M = {
     status = {
       unknown = "?",
       pending = "●",
+      queued = "●",
       requested = "●",
       waiting = "●",
       in_progress = "●",
@@ -55,7 +57,7 @@ local M = {
   },
 }
 
----@param run GhWorkflowRun
+---@param run { status: string, conclusion: string }
 ---@return string
 local function get_workflow_run_icon(run)
   if not run then
@@ -67,19 +69,6 @@ local function get_workflow_run_icon(run)
   end
 
   return M.icons.status[run.status] or M.icons.status.unknown
-end
-
----@param runs GhWorkflowRun[]
----@return table<number, GhWorkflowRun[]>
-local function group_by_workflow(runs)
-  local m = {}
-
-  for _, run in ipairs(runs) do
-    m[run.workflow_id] = m[run.workflow_id] or {}
-    table.insert(m[run.workflow_id], run)
-  end
-
-  return m
 end
 
 ---@param state GhActionsState
@@ -143,7 +132,7 @@ local function upper_first(str)
   return str:sub(1, 1):upper() .. str:sub(2)
 end
 
----@param run GhWorkflowRun
+---@param run { status: string, conclusion: string }
 ---@return string|nil
 local function get_workflow_run_icon_highlight(run)
   if not run then
@@ -157,7 +146,7 @@ local function get_workflow_run_icon_highlight(run)
   return "GhActionsRunIcon" .. upper_first(run.status)
 end
 
----@param run GhWorkflowRun
+---@param run { status: string, conclusion: string }
 ---@return TextSegment
 local function renderWorkflowRunIcon(run)
   return { str = get_workflow_run_icon(run), hl = get_workflow_run_icon_highlight(run) }
@@ -171,7 +160,9 @@ local function renderWorkflows(state)
 
   ---@type Line[]
   local lines = {}
-  local workflow_runs_by_workflow_id = group_by_workflow(workflow_runs)
+  local workflow_runs_by_workflow_id = utils.group_by(function(workflow_run)
+    return workflow_run.workflow_id
+  end, workflow_runs)
   local currentline = 2
 
   for _, workflow in ipairs(workflows) do
@@ -204,18 +195,57 @@ local function renderWorkflows(state)
     for _, run in ipairs({ unpack(runs, 1, runs_n) }) do
       currentline = currentline + 1
 
-      table.insert(M.locations, {
-        kind = "workflow_run",
-        value = run,
-        from = currentline,
-        to = currentline,
-      })
+      local runline = currentline
 
       table.insert(lines, {
         { str = "  " },
         renderWorkflowRunIcon(run),
         { str = " " },
         { str = run.head_commit.message:gsub("\n.*", "") },
+      })
+
+      for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
+        currentline = currentline + 1
+        local jobline = currentline
+
+        table.insert(lines, {
+          { str = "    " },
+          renderWorkflowRunIcon(job),
+          { str = " " },
+          { str = job.name },
+        })
+
+        for _, step in ipairs(job.steps) do
+          currentline = currentline + 1
+
+          table.insert(M.locations, {
+            kind = "workflow_step",
+            value = job,
+            from = currentline,
+            to = currentline,
+          })
+
+          table.insert(lines, {
+            { str = "      " },
+            renderWorkflowRunIcon(step),
+            { str = " " },
+            { str = step.name },
+          })
+        end
+
+        table.insert(M.locations, {
+          kind = "workflow_job",
+          value = job,
+          from = currentline,
+          to = jobline,
+        })
+      end
+
+      table.insert(M.locations, {
+        kind = "workflow_run",
+        value = run,
+        from = runline,
+        to = currentline,
       })
     end
 
