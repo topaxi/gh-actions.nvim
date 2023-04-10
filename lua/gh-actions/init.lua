@@ -53,21 +53,29 @@ local function fetch_data()
 
   gh.get_repository_workflow_runs(repo, 100, {
     callback = function(workflow_runs)
+      local old_workflow_runs = store.get_state().workflow_runs
+
       store.update_state(function(state)
         state.workflow_runs = workflow_runs
       end)
 
-      for _, run in ipairs(workflow_runs) do
-        --TODO this will not update runs which completed since the last update
-        if run.status ~= "completed" then
-          gh.get_workflow_run_jobs(repo, run.id, 20, {
-            callback = function(jobs)
-              store.update_state(function(state)
-                state.workflow_jobs[run.id] = jobs
-              end)
-            end,
-          })
-        end
+      local running_workflows = utils.uniq(
+        function(run)
+          return run.id
+        end,
+        vim.tbl_filter(function(run)
+          return run.status ~= "completed"
+        end, { unpack(old_workflow_runs), unpack(workflow_runs) })
+      )
+
+      for _, run in ipairs(running_workflows) do
+        gh.get_workflow_run_jobs(repo, run.id, 20, {
+          callback = function(jobs)
+            store.update_state(function(state)
+              state.workflow_jobs[run.id] = jobs
+            end)
+          end,
+        })
       end
     end,
   })
