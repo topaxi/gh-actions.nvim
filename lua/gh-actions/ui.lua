@@ -1,6 +1,7 @@
 local Split = require("nui.split")
 local store = require("gh-actions.store")
 local utils = require("gh-actions.utils")
+local Buffer = require("gh-actions.ui.buffer")
 
 local split = Split({
   relative = "editor",
@@ -23,9 +24,7 @@ local split = Split({
 ---@field to integer
 
 local M = {
-  ns = vim.api.nvim_create_namespace("gh-actions"),
   split = split,
-  -- TODO: While rendering, store row/line (start line,end line) and kind
   ---@type GhActionsRenderLocation[]
   locations = {},
   -- TODO: Maybe switch to codicons via nerdfont
@@ -71,16 +70,17 @@ local function get_workflow_run_icon(run)
   return M.icons.status[run.status] or M.icons.status.unknown
 end
 
+---@param buf Buffer
 ---@param state GhActionsState
-local function renderTitle(state)
+local function renderTitle(buf, state)
   if not state.repo then
-    return { "Github Workflows", "" }
+    buf:append("Github Workflows"):nl()
   end
 
-  return { string.format("Github Workflows for %s", state.repo), "" }
+  buf:append(string.format("Github Workflows for %s", state.repo)):nl()
 end
 
-local function get_current_line(line)
+local function get_cursor_line(line)
   return line or vim.api.nvim_win_get_cursor(split.winid)[1]
 end
 
@@ -88,7 +88,7 @@ end
 ---@param line? integer
 ---@return GhWorkflow|nil
 function M.get_workflow(line)
-  line = get_current_line(line)
+  line = get_cursor_line(line)
 
   for _, loc in ipairs(M.locations) do
     if loc.kind == "workflow" and line >= loc.from and line <= loc.to then
@@ -101,29 +101,13 @@ end
 ---@param line? integer
 ---@return GhWorkflowRun|nil
 function M.get_workflow_run(line)
-  line = get_current_line(line)
+  line = get_cursor_line(line)
 
   for _, loc in ipairs(M.locations) do
     if loc.kind == "workflow_run" and line >= loc.from and line <= loc.to then
       return loc.value
     end
   end
-end
-
----@class TextSegment
----@field str string
----@field hl string
-
----@alias Line TextSegment[]
-
----@param line Line
-local function get_line_str(line)
-  return table.concat(
-    vim.tbl_map(function(segment)
-      return segment.str
-    end, line),
-    ""
-  )
 end
 
 ---@param str string
@@ -157,33 +141,21 @@ local function append_location(location)
   table.insert(M.locations, location)
 end
 
+---@param buf Buffer
 ---@param state GhActionsState
----@return table
-local function renderWorkflows(state)
+local function renderWorkflows(buf, state)
   local workflows = state.workflows
   local workflow_runs = state.workflow_runs
 
-  ---@type Line[]
-  local lines = {}
   local workflow_runs_by_workflow_id = utils.group_by(function(workflow_run)
     return workflow_run.workflow_id
   end, workflow_runs)
-  local currentline = 2
 
   for _, workflow in ipairs(workflows) do
-    currentline = currentline + 1
     local runs = workflow_runs_by_workflow_id[workflow.id] or {}
     local runs_n = math.min(5, #runs)
 
-    append_location({
-      kind = "workflow",
-      value = workflow,
-      from = currentline,
-      to = currentline + runs_n,
-    })
-
-    -- TODO Render ⚡️ or ✨ if workflow has workflow dispatch
-    table.insert(lines, {
+    buf:append_line({
       renderWorkflowRunIcon(runs[1]),
       { str = " " },
       { str = workflow.name },
@@ -195,55 +167,57 @@ local function renderWorkflows(state)
       },
     })
 
+    append_location({
+      kind = "workflow",
+      value = workflow,
+      from = buf:get_current_line(),
+      to = buf:get_current_line() + runs_n,
+    })
+
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
     -- runs on opening the split. I guess we do want to have this configurable.
     for _, run in ipairs({ unpack(runs, 1, runs_n) }) do
-      currentline = currentline + 1
-
-      local runline = currentline
-
-      table.insert(lines, {
+      buf:append_line({
         { str = "  " },
         renderWorkflowRunIcon(run),
         { str = " " },
         { str = run.head_commit.message:gsub("\n.*", "") },
       })
 
+      local runline = buf:get_current_line()
+
       if run.conclusion ~= "success" then
         for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
-          currentline = currentline + 1
-          local jobline = currentline
-
-          table.insert(lines, {
+          buf:append_line({
             { str = "    " },
             renderWorkflowRunIcon(job),
             { str = " " },
             { str = job.name },
           })
 
+          local jobline = buf:get_current_line()
+
           for _, step in ipairs(job.steps) do
-            currentline = currentline + 1
-
-            append_location({
-              kind = "workflow_step",
-              value = job,
-              from = currentline,
-              to = currentline,
-            })
-
-            table.insert(lines, {
+            buf:append_line({
               { str = "      " },
               renderWorkflowRunIcon(step),
               { str = " " },
               { str = step.name },
+            })
+
+            append_location({
+              kind = "workflow_step",
+              value = job,
+              from = buf:get_current_line(),
+              to = buf:get_current_line(),
             })
           end
 
           append_location({
             kind = "workflow_job",
             value = job,
-            from = currentline,
-            to = jobline,
+            from = jobline,
+            to = buf:get_current_line(),
           })
         end
       end
@@ -252,17 +226,14 @@ local function renderWorkflows(state)
         kind = "workflow_run",
         value = run,
         from = runline,
-        to = currentline,
+        to = buf:get_current_line(),
       })
     end
 
     if #runs > 0 then
-      currentline = currentline + 1
-      table.insert(lines, { { str = "" } })
+      buf:nl()
     end
   end
-
-  return lines
 end
 
 local function is_visible()
@@ -279,47 +250,12 @@ function M.render(state)
 
   vim.bo[split.bufnr].modifiable = true
 
-  local workflowLines = renderWorkflows(state)
+  local buf = Buffer.new()
 
-  local lines = vim.tbl_flatten({
-    renderTitle(state),
-    vim.tbl_map(get_line_str, workflowLines),
-  })
+  renderTitle(buf, state)
+  renderWorkflows(buf, state)
 
-  vim.api.nvim_buf_set_lines(split.bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_clear_namespace(split.bufnr, M.ns, 0, -1)
-
-  for l, line in ipairs(workflowLines) do
-    local col = 0
-
-    for _, segment in ipairs(line) do
-      local width = vim.fn.strlen(segment.str)
-
-      local extmark = segment.hl
-      if extmark then
-        if type(extmark) == "string" then
-          extmark = { hl_group = extmark, end_col = col + width }
-        end
-
-        local extmark_col = extmark.col or col
-        extmark.col = nil
-        ---TODO: Remove "+ 2" once we refactor title and workflow rendering into one "flow"
-        local line_nr = l - 1 + 2
-        local ok = pcall(vim.api.nvim_buf_set_extmark, split.bufnr, M.ns, line_nr, extmark_col, extmark)
-        if not ok then
-          vim.notify("Failed to set extmark. Please report a bug with this info:\n" .. vim.inspect({
-            segment = segment,
-            line_nr = line_nr,
-            line = line,
-            extmark_col = extmark_col,
-            extmark = extmark,
-          }))
-        end
-      end
-
-      col = col + width
-    end
-  end
+  buf:render(split.bufnr)
 
   vim.bo[split.bufnr].modifiable = false
 end
