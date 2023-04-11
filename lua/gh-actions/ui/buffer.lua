@@ -1,6 +1,6 @@
 ---@class TextSegment
 ---@field str string
----@field hl string
+---@field hl string|nil
 
 ---@alias Line TextSegment[]
 

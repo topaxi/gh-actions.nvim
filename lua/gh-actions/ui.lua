@@ -34,6 +34,7 @@ local M = {
     conclusion = {
       success = "✓",
       failure = "X",
+      startup_failure = "X",
       cancelled = "⊘",
       skipped = "◌",
     },
@@ -49,12 +50,15 @@ local M = {
   highlights = {
     GhActionsRunIconSuccess = { link = "LspDiagnosticsVirtualTextHint" },
     GhActionsRunIconFailure = { link = "LspDiagnosticsVirtualTextError" },
+    GhActionsRunIconStartup_failure = { link = "LspDiagnosticsVirtualTextError" },
     GhActionsRunIconPending = { link = "LspDiagnosticsVirtualTextWarning" },
     GhActionsRunIconRequested = { link = "LspDiagnosticsVirtualTextWarning" },
     GhActionsRunIconWaiting = { link = "LspDiagnosticsVirtualTextWarning" },
     GhActionsRunIconIn_progress = { link = "LspDiagnosticsVirtualTextWarning" },
     GhActionsRunIconCancelled = { link = "Comment" },
     GhActionsRunIconSkipped = { link = "Comment" },
+    GhActionsRunCancelled = { link = "Comment" },
+    GhActionsRunSkipped = { link = "Comment" },
   },
 }
 
@@ -133,6 +137,20 @@ local function get_workflow_run_icon_highlight(run)
 end
 
 ---@param run { status: string, conclusion: string }
+---@return string|nil
+local function get_workflow_run_highlight(run)
+  if not run then
+    return nil
+  end
+
+  if run.status == "completed" then
+    return "GhActionsRun" .. upper_first(run.conclusion)
+  end
+
+  return "GhActionsRun" .. upper_first(run.status)
+end
+
+---@param run { status: string, conclusion: string }
 ---@return TextSegment
 local function renderWorkflowRunIcon(run)
   return { str = get_workflow_run_icon(run), hl = get_workflow_run_icon_highlight(run) }
@@ -160,7 +178,7 @@ local function renderWorkflows(buf, state)
     buf:append_line({
       renderWorkflowRunIcon(runs[1]),
       { str = " " },
-      { str = workflow.name },
+      { str = workflow.name, hl = get_workflow_run_highlight(runs[1]) },
       {
         str = state.workflow_configs[workflow.id]
             and state.workflow_configs[workflow.id].config.on.workflow_dispatch
@@ -183,7 +201,7 @@ local function renderWorkflows(buf, state)
         { str = "  " },
         renderWorkflowRunIcon(run),
         { str = " " },
-        { str = run.head_commit.message:gsub("\n.*", "") },
+        { str = run.head_commit.message:gsub("\n.*", ""), hl = get_workflow_run_highlight(run) },
       })
 
       local runline = buf:get_current_line()
