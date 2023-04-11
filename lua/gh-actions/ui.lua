@@ -59,6 +59,10 @@ local M = {
     GhActionsRunIconSkipped = { link = "Comment" },
     GhActionsRunCancelled = { link = "Comment" },
     GhActionsRunSkipped = { link = "Comment" },
+    GhActionsJobCancelled = { link = "Comment" },
+    GhActionsJobSkipped = { link = "Comment" },
+    GhActionsStepCancelled = { link = "Comment" },
+    GhActionsStepSkipped = { link = "Comment" },
   },
 }
 
@@ -123,37 +127,24 @@ local function upper_first(str)
 end
 
 ---@param run { status: string, conclusion: string }
+---@param prefix string
 ---@return string|nil
-local function get_workflow_run_icon_highlight(run)
+local function get_status_highlight(run, prefix)
   if not run then
     return nil
   end
 
   if run.status == "completed" then
-    return "GhActionsRunIcon" .. upper_first(run.conclusion)
+    return "GhActions" .. upper_first(prefix) .. upper_first(run.conclusion)
   end
 
-  return "GhActionsRunIcon" .. upper_first(run.status)
-end
-
----@param run { status: string, conclusion: string }
----@return string|nil
-local function get_workflow_run_highlight(run)
-  if not run then
-    return nil
-  end
-
-  if run.status == "completed" then
-    return "GhActionsRun" .. upper_first(run.conclusion)
-  end
-
-  return "GhActionsRun" .. upper_first(run.status)
+  return "GhActions" .. upper_first(prefix) .. upper_first(run.status)
 end
 
 ---@param run { status: string, conclusion: string }
 ---@return TextSegment
 local function renderWorkflowRunIcon(run)
-  return { str = get_workflow_run_icon(run), hl = get_workflow_run_icon_highlight(run) }
+  return { str = get_workflow_run_icon(run), hl = get_status_highlight(run, "RunIcon") }
 end
 
 ---@param location GhActionsRenderLocation
@@ -178,7 +169,7 @@ local function renderWorkflows(buf, state)
     buf:append_line({
       renderWorkflowRunIcon(runs[1]),
       { str = " " },
-      { str = workflow.name, hl = get_workflow_run_highlight(runs[1]) },
+      { str = workflow.name, hl = get_status_highlight(runs[1], "run") },
       {
         str = state.workflow_configs[workflow.id]
             and state.workflow_configs[workflow.id].config.on.workflow_dispatch
@@ -201,7 +192,7 @@ local function renderWorkflows(buf, state)
         { str = "  " },
         renderWorkflowRunIcon(run),
         { str = " " },
-        { str = run.head_commit.message:gsub("\n.*", ""), hl = get_workflow_run_highlight(run) },
+        { str = run.head_commit.message:gsub("\n.*", ""), hl = get_status_highlight(run, "run") },
       })
 
       local runline = buf:get_current_line()
@@ -212,7 +203,7 @@ local function renderWorkflows(buf, state)
             { str = "    " },
             renderWorkflowRunIcon(job),
             { str = " " },
-            { str = job.name },
+            { str = job.name, hl = get_status_highlight(job, "job") },
           })
 
           local jobline = buf:get_current_line()
@@ -223,7 +214,7 @@ local function renderWorkflows(buf, state)
                 { str = "      " },
                 renderWorkflowRunIcon(step),
                 { str = " " },
-                { str = step.name },
+                { str = step.name, hl = get_status_highlight(step, "step") },
               })
 
               append_location({
