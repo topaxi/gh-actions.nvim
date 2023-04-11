@@ -35,6 +35,7 @@ local M = {
       success = "✓",
       failure = "X",
       cancelled = "⊘",
+      skipped = "⊘",
     },
     status = {
       unknown = "?",
@@ -53,6 +54,7 @@ local M = {
     GhActionsRunIconWaiting = { link = "LspDiagnosticsVirtualTextWarning" },
     GhActionsRunIconIn_progress = { link = "LspDiagnosticsVirtualTextWarning" },
     GhActionsRunIconCancelled = { link = "Comment" },
+    GhActionsRunIconSkipped = { link = "Comment" },
   },
 }
 

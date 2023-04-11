@@ -64,7 +64,7 @@ local function fetch_data()
           return run.id
         end,
         vim.tbl_filter(function(run)
-          return run.status ~= "completed"
+          return run.status ~= "completed" and run.status ~= "skipped"
         end, { unpack(old_workflow_runs), unpack(workflow_runs) })
       )
 
