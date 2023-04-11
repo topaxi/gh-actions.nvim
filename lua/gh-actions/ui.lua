@@ -217,20 +217,22 @@ local function renderWorkflows(buf, state)
 
           local jobline = buf:get_current_line()
 
-          for _, step in ipairs(job.steps) do
-            buf:append_line({
-              { str = "      " },
-              renderWorkflowRunIcon(step),
-              { str = " " },
-              { str = step.name },
-            })
+          if job.conclusion ~= "success" then
+            for _, step in ipairs(job.steps) do
+              buf:append_line({
+                { str = "      " },
+                renderWorkflowRunIcon(step),
+                { str = " " },
+                { str = step.name },
+              })
 
-            append_location({
-              kind = "workflow_step",
-              value = job,
-              from = buf:get_current_line(),
-              to = buf:get_current_line(),
-            })
+              append_location({
+                kind = "workflow_step",
+                value = job,
+                from = buf:get_current_line(),
+                to = buf:get_current_line(),
+              })
+            end
           end
 
           append_location({
