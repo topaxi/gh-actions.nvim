@@ -1,5 +1,7 @@
 ---@class GhActionsConfig
 local defaultConfig = {
+  ---@type string|nil
+  browser = nil,
   refresh_interval = 10,
   indent = 2,
   ---@class GhActionsIcons

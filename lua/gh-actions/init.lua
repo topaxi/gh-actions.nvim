@@ -107,14 +107,12 @@ function M.open()
   ui.split:map("n", "q", M.close, { noremap = true })
 
   ui.split:map("n", "<cr>", function()
-    local workflow = ui.get_workflow()
     local workflow_run = ui.get_workflow_run()
 
-    if workflow then
-      vim.notify(string.format("Workflow: %s", workflow.name))
-    end
     if workflow_run then
-      vim.notify(string.format("Workflow run: %s", workflow_run.head_commit.message))
+      utils.open(workflow_run.html_url)
+
+      return
     end
   end, { noremap = true })
 

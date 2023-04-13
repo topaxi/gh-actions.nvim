@@ -117,4 +117,10 @@ function Buffer:render(bufnr)
   end
 end
 
+function Buffer:trim()
+  while #self._lines > 0 and #self._lines[#self._lines] == 0 do
+    table.remove(self._lines)
+  end
+end
+
 return Buffer

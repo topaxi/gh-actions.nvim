@@ -112,6 +112,8 @@ end
 ---@field conclusion string
 ---@field workflow_id number
 ---@field head_commit GhCommit
+---@field url string
+---@field html_url string
 
 ---@class GhWorkflowRunsResponse
 ---@field total_count number

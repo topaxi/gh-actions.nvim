@@ -60,7 +60,7 @@ function M.setup()
   M.split = Split(Config.options.split)
   M.renderer = Render.new(store)
 
-  for hl_group, hl_group_value in pairs(Config.highlights) do
+  for hl_group, hl_group_value in pairs(Config.options.highlights) do
     vim.api.nvim_set_hl(0, hl_group, hl_group_value)
   end
 end
