@@ -1,4 +1,8 @@
-local M = {}
+local stringUtils = require("gh-actions.utils.string")
+
+local M = {
+  string = stringUtils,
+}
 
 ---@generic T
 ---@param debounced_fn fun(arg1: T)

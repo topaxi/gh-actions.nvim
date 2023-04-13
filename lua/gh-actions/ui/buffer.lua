@@ -21,7 +21,7 @@ function Buffer.new()
 end
 
 ---@param line Line
----@param opts? { indent?: number }
+---@param opts? { indent?: number | nil }
 function Buffer:append_line(line, opts)
   opts = opts or {}
 
@@ -35,8 +35,8 @@ function Buffer:append_line(line, opts)
 end
 
 ---@param str string
----@param hl? string
----@param opts? { indent?: number }
+---@param hl? string|nil
+---@param opts? { indent?: number | nil }
 function Buffer:append(str, hl, opts)
   opts = opts or {}
 
@@ -75,6 +75,7 @@ local function get_line_str(line)
   )
 end
 
+---@param bufnr integer
 function Buffer:render(bufnr)
   local lines = vim.tbl_map(get_line_str, self._lines)
 
