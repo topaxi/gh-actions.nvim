@@ -3,10 +3,9 @@ local Config = require("gh-actions.config")
 local store = require("gh-actions.store")
 local Render = require("gh-actions.ui.render")
 
-local render = Render.new(store)
-
 local M = {
   split = nil,
+  renderer = nil,
 }
 
 local function get_cursor_line(line)
@@ -19,7 +18,7 @@ end
 function M.get_workflow(line)
   line = get_cursor_line(line)
 
-  for _, loc in ipairs(render.locations) do
+  for _, loc in ipairs(M.renderer.locations) do
     if loc.kind == "workflow" and line >= loc.from and line <= loc.to then
       return loc.value
     end
@@ -32,7 +31,7 @@ end
 function M.get_workflow_run(line)
   line = get_cursor_line(line)
 
-  for _, loc in ipairs(render.locations) do
+  for _, loc in ipairs(M.renderer.locations) do
     if loc.kind == "workflow_run" and line >= loc.from and line <= loc.to then
       return loc.value
     end
@@ -52,13 +51,14 @@ function M.render()
 
   vim.bo[M.split.bufnr].modifiable = true
 
-  render:render(M.split.bufnr)
+  M.renderer:render(M.split.bufnr)
 
   vim.bo[M.split.bufnr].modifiable = false
 end
 
 function M.setup()
   M.split = Split(Config.options.split)
+  M.renderer = Render.new(store)
 
   for hl_group, hl_group_value in pairs(Config.highlights) do
     vim.api.nvim_set_hl(0, hl_group, hl_group_value)
