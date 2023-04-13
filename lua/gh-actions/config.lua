@@ -2,8 +2,10 @@
 local defaultConfig = {
   refresh_interval = 10,
   indent = 2,
+  ---@class GhActionsIcons
   icons = {
     workflow_dispatch = "⚡️",
+    ---@class GhActionsIconsConclusion
     conclusion = {
       success = "✓",
       failure = "X",
@@ -11,6 +13,7 @@ local defaultConfig = {
       cancelled = "⊘",
       skipped = "◌",
     },
+    ---@class GhActionsIconsStatus
     status = {
       unknown = "?",
       pending = "○",
@@ -20,6 +23,7 @@ local defaultConfig = {
       in_progress = "●",
     },
   },
+  ---@class GhActionsHighlights
   highlights = {
     GhActionsRunIconSuccess = { link = "LspDiagnosticsVirtualTextHint" },
     GhActionsRunIconFailure = { link = "LspDiagnosticsVirtualTextError" },
