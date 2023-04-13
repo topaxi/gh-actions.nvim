@@ -189,33 +189,30 @@ local function renderWorkflows(buf, state)
     -- runs on opening the split. I guess we do want to have this configurable.
     for _, run in ipairs({ unpack(runs, 1, runs_n) }) do
       buf:append_line({
-        { str = "  " },
         renderWorkflowRunIcon(run),
         { str = " " },
         { str = run.head_commit.message:gsub("\n.*", ""), hl = get_status_highlight(run, "run") },
-      })
+      }, { indent = 2 })
 
       local runline = buf:get_current_line()
 
       if run.conclusion ~= "success" then
         for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
           buf:append_line({
-            { str = "    " },
             renderWorkflowRunIcon(job),
             { str = " " },
             { str = job.name, hl = get_status_highlight(job, "job") },
-          })
+          }, { indent = 4 })
 
           local jobline = buf:get_current_line()
 
           if job.conclusion ~= "success" then
             for _, step in ipairs(job.steps) do
               buf:append_line({
-                { str = "      " },
                 renderWorkflowRunIcon(step),
                 { str = " " },
                 { str = step.name, hl = get_status_highlight(step, "step") },
-              })
+              }, { indent = 6 })
 
               append_location({
                 kind = "workflow_step",

@@ -21,7 +21,14 @@ function Buffer.new()
 end
 
 ---@param line Line
-function Buffer:append_line(line)
+---@param opts? { indent?: number }
+function Buffer:append_line(line, opts)
+  opts = opts or {}
+
+  if opts.indent then
+    table.insert(line, 1, { str = string.rep(" ", opts.indent) })
+  end
+
   table.insert(self._lines, line)
 
   return self
@@ -29,8 +36,21 @@ end
 
 ---@param str string
 ---@param hl? string
-function Buffer:append(str, hl)
-  table.insert(self._lines, { { str = str, hl = hl } })
+---@param opts? { indent?: number }
+function Buffer:append(str, hl, opts)
+  opts = opts or {}
+
+  if #self._lines == 0 then
+    table.insert(self._lines, {})
+  end
+
+  local line = str
+
+  if opts.indent then
+    line = string.rep(" ", opts.indent) .. line
+  end
+
+  table.insert(self._lines[#self._lines], { str = line, hl = hl })
 
   return self
 end
@@ -67,6 +87,7 @@ function Buffer:render(bufnr)
     for _, segment in ipairs(line) do
       local width = vim.fn.strlen(segment.str)
 
+      ---@type string|table|nil
       local extmark = segment.hl
       if extmark then
         if type(extmark) == "string" then
