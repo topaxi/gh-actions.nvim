@@ -1,3 +1,4 @@
+local Config = require("gh-actions.config")
 local Buffer = require("gh-actions.ui.buffer")
 local utils = require("gh-actions.utils")
 
@@ -14,61 +15,20 @@ local utils = require("gh-actions.utils")
 ---@field locations GhActionsRenderLocation[]
 local GhActionsRender = {
   locations = {},
-  ---TODO Move config to it's own module
-  config = {
-    -- TODO: Maybe switch to codicons via nerdfont
-    --       https://microsoft.github.io/vscode-codicons/dist/codicon.html
-    --       https://www.nerdfonts.com/cheat-sheet
-    icons = {
-      conclusion = {
-        success = "✓",
-        failure = "X",
-        startup_failure = "X",
-        cancelled = "⊘",
-        skipped = "◌",
-      },
-      status = {
-        unknown = "?",
-        pending = "○",
-        queued = "○",
-        requested = "○",
-        waiting = "○",
-        in_progress = "●",
-      },
-    },
-    highlights = {
-      GhActionsRunIconSuccess = { link = "LspDiagnosticsVirtualTextHint" },
-      GhActionsRunIconFailure = { link = "LspDiagnosticsVirtualTextError" },
-      GhActionsRunIconStartup_failure = { link = "LspDiagnosticsVirtualTextError" },
-      GhActionsRunIconPending = { link = "LspDiagnosticsVirtualTextWarning" },
-      GhActionsRunIconRequested = { link = "LspDiagnosticsVirtualTextWarning" },
-      GhActionsRunIconWaiting = { link = "LspDiagnosticsVirtualTextWarning" },
-      GhActionsRunIconIn_progress = { link = "LspDiagnosticsVirtualTextWarning" },
-      GhActionsRunIconCancelled = { link = "Comment" },
-      GhActionsRunIconSkipped = { link = "Comment" },
-      GhActionsRunCancelled = { link = "Comment" },
-      GhActionsRunSkipped = { link = "Comment" },
-      GhActionsJobCancelled = { link = "Comment" },
-      GhActionsJobSkipped = { link = "Comment" },
-      GhActionsStepCancelled = { link = "Comment" },
-      GhActionsStepSkipped = { link = "Comment" },
-    },
-  },
 }
 
----TODO Move config to it's own module
 ---@param run { status: string, conclusion: string }
 ---@return string
 local function get_workflow_run_icon(run)
   if not run then
-    return GhActionsRender.config.icons.status.unknown
+    return Config.options.icons.status.unknown
   end
 
   if run.status == "completed" then
-    return GhActionsRender.config.icons.conclusion[run.conclusion] or run.conclusion
+    return Config.options.icons.conclusion[run.conclusion] or run.conclusion
   end
 
-  return GhActionsRender.config.icons.status[run.status] or GhActionsRender.config.icons.status.unknown
+  return Config.options.icons.status[run.status] or Config.options.icons.status.unknown
 end
 
 ---@param run { status: string, conclusion: string }
@@ -149,7 +109,7 @@ function GhActionsRender:workflow(state, workflow, runs)
     :append(
       state.workflow_configs[workflow.id]
           and state.workflow_configs[workflow.id].config.on.workflow_dispatch
-          and " ⚡️"
+          and (" " .. Config.options.icons.workflow_dispatch)
         or ""
     )
     :nl()
@@ -176,7 +136,7 @@ end
 ---@param run GhWorkflowRun
 function GhActionsRender:workflow_run(state, run)
   self
-    :status_icon(run, { indent = 2 })
+    :status_icon(run, { indent = 1 })
     :append(" ")
     :append(run.head_commit.message:gsub("\n.*", ""), get_status_highlight(run, "run"))
     :nl()
@@ -199,7 +159,7 @@ end
 
 ---@param job GhWorkflowRunJob
 function GhActionsRender:workflow_job(job)
-  self:status_icon(job, { indent = 4 }):append(" "):append(job.name, get_status_highlight(job, "job")):nl()
+  self:status_icon(job, { indent = 2 }):append(" "):append(job.name, get_status_highlight(job, "job")):nl()
 
   local jobline = self:get_current_line()
 
@@ -219,7 +179,7 @@ end
 
 ---@param step GhWorkflowRunJobStep
 function GhActionsRender:workflow_step(step)
-  self:status_icon(step, { indent = 6 }):append(" "):append(step.name, get_status_highlight(step, "step")):nl()
+  self:status_icon(step, { indent = 3 }):append(" "):append(step.name, get_status_highlight(step, "step")):nl()
 
   self:append_location({
     kind = "workflow_step",

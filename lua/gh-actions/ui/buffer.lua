@@ -1,3 +1,5 @@
+local Config = require("gh-actions.config")
+
 ---@class TextSegment
 ---@field str string
 ---@field hl string|nil
@@ -26,7 +28,7 @@ function Buffer:append_line(line, opts)
   opts = opts or {}
 
   if opts.indent then
-    table.insert(line, 1, { str = string.rep(" ", opts.indent) })
+    table.insert(line, 1, { str = string.rep(" ", opts.indent * Config.options.indent) })
   end
 
   table.insert(self._lines, line)
@@ -47,7 +49,7 @@ function Buffer:append(str, hl, opts)
   local line = str
 
   if opts.indent then
-    line = string.rep(" ", opts.indent) .. line
+    line = string.rep(" ", opts.indent * Config.options.indent) .. line
   end
 
   table.insert(self._lines[#self._lines], { str = line, hl = hl })

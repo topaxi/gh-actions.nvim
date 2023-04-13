@@ -1,47 +1,16 @@
 local Split = require("nui.split")
+local Config = require("gh-actions.config")
 local store = require("gh-actions.store")
 local Render = require("gh-actions.ui.render")
 
 local render = Render.new(store)
 
-local split = Split({
-  relative = "editor",
-  position = "right",
-  size = 60,
-  win_options = {
-    wrap = false,
-    number = false,
-    foldlevel = nil,
-    foldcolumn = "0",
-    cursorcolumn = false,
-    signcolumn = "no",
-  },
-})
-
 local M = {
-  split = split,
-  ---TODO Move highlights to config module
-  highlights = {
-    GhActionsRunIconSuccess = { link = "LspDiagnosticsVirtualTextHint" },
-    GhActionsRunIconFailure = { link = "LspDiagnosticsVirtualTextError" },
-    GhActionsRunIconStartup_failure = { link = "LspDiagnosticsVirtualTextError" },
-    GhActionsRunIconPending = { link = "LspDiagnosticsVirtualTextWarning" },
-    GhActionsRunIconRequested = { link = "LspDiagnosticsVirtualTextWarning" },
-    GhActionsRunIconWaiting = { link = "LspDiagnosticsVirtualTextWarning" },
-    GhActionsRunIconIn_progress = { link = "LspDiagnosticsVirtualTextWarning" },
-    GhActionsRunIconCancelled = { link = "Comment" },
-    GhActionsRunIconSkipped = { link = "Comment" },
-    GhActionsRunCancelled = { link = "Comment" },
-    GhActionsRunSkipped = { link = "Comment" },
-    GhActionsJobCancelled = { link = "Comment" },
-    GhActionsJobSkipped = { link = "Comment" },
-    GhActionsStepCancelled = { link = "Comment" },
-    GhActionsStepSkipped = { link = "Comment" },
-  },
+  split = nil,
 }
 
 local function get_cursor_line(line)
-  return line or vim.api.nvim_win_get_cursor(split.winid)[1]
+  return line or vim.api.nvim_win_get_cursor(M.split.winid)[1]
 end
 
 ---TODO: This should be a local function
@@ -71,7 +40,7 @@ function M.get_workflow_run(line)
 end
 
 local function is_visible()
-  return split.bufnr ~= nil and vim.bo[split.bufnr] ~= nil
+  return M.split.bufnr ~= nil and vim.bo[M.split.bufnr] ~= nil
 end
 
 function M.render()
@@ -81,28 +50,30 @@ function M.render()
     return
   end
 
-  vim.bo[split.bufnr].modifiable = true
+  vim.bo[M.split.bufnr].modifiable = true
 
-  render:render(split.bufnr)
+  render:render(M.split.bufnr)
 
-  vim.bo[split.bufnr].modifiable = false
+  vim.bo[M.split.bufnr].modifiable = false
 end
 
 function M.setup()
-  for hl_group, hl_group_value in pairs(M.highlights) do
+  M.split = Split(Config.options.split)
+
+  for hl_group, hl_group_value in pairs(Config.highlights) do
     vim.api.nvim_set_hl(0, hl_group, hl_group_value)
   end
 end
 
 function M.open()
-  split:mount()
+  M.split:mount()
 
   store.on_update(M.render)
   M.render()
 end
 
 function M.close()
-  split:unmount()
+  M.split:unmount()
   store.off_update(M.render)
 end
 

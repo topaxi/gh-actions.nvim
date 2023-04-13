@@ -1,3 +1,4 @@
+local Config = require("gh-actions.config")
 local store = require("gh-actions.store")
 local git = require("gh-actions.git")
 local gh = require("gh-actions.github")
@@ -7,15 +8,10 @@ local utils = require("gh-actions.utils")
 local M = {
   setup_called = false,
   init_root = "",
-  refresh_interval = 10,
   timer = nil,
 }
 
----@class GhActionsOptions
----@field refresh_interval? integer in seconds
----@field ui? GhActionsRenderOptions
-
----@param opts? GhActionsOptions
+---@param opts? GhActionsConfig
 function M.setup(opts)
   opts = opts or {}
 
@@ -23,9 +19,8 @@ function M.setup(opts)
 
   M.setup_called = true
 
-  M.refresh_interval = opts.refresh_interval or M.refresh_interval
-
-  ui.setup(opts.ui)
+  Config.setup(opts)
+  ui.setup()
 
   vim.api.nvim_create_user_command("GhActions", M.open, {})
 end
@@ -152,7 +147,7 @@ function M.open()
   end, { noremap = true })
 
   M.timer = vim.loop.new_timer()
-  M.timer:start(0, M.refresh_interval * 1000, vim.schedule_wrap(fetch_data))
+  M.timer:start(0, Config.options.refresh_interval * 1000, vim.schedule_wrap(fetch_data))
 
   --TODO: This might get called after rendering..
   store.on_update(M.update_workflow_configs)
