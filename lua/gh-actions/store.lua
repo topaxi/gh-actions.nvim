@@ -1,4 +1,4 @@
-local utils = require("gh-actions.utils")
+local utils = require('gh-actions.utils')
 
 ---@class GhActionsStateWorkflowConfig
 ---@field last_read integer
@@ -13,7 +13,7 @@ local utils = require("gh-actions.utils")
 
 ---@type GhActionsState
 local initialState = {
-  repo = "",
+  repo = '',
   workflows = {},
   workflow_runs = {},
   workflow_jobs = {},

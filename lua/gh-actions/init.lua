@@ -1,13 +1,13 @@
-local Config = require("gh-actions.config")
-local store = require("gh-actions.store")
-local git = require("gh-actions.git")
-local gh = require("gh-actions.github")
-local ui = require("gh-actions.ui")
-local utils = require("gh-actions.utils")
+local Config = require('gh-actions.config')
+local store = require('gh-actions.store')
+local git = require('gh-actions.git')
+local gh = require('gh-actions.github')
+local ui = require('gh-actions.ui')
+local utils = require('gh-actions.utils')
 
 local M = {
   setup_called = false,
-  init_root = "",
+  init_root = '',
   timer = nil,
 }
 
@@ -22,7 +22,7 @@ function M.setup(opts)
   Config.setup(opts)
   ui.setup()
 
-  vim.api.nvim_create_user_command("GhActions", M.open, {})
+  vim.api.nvim_create_user_command('GhActions', M.open, {})
 end
 
 --TODO Only periodically fetch all workflows
@@ -59,7 +59,7 @@ local function fetch_data()
           return run.id
         end,
         vim.tbl_filter(function(run)
-          return run.status ~= "completed" and run.status ~= "skipped"
+          return run.status ~= 'completed' and run.status ~= 'skipped'
         end, { unpack(old_workflow_runs), unpack(workflow_runs) })
       )
 
@@ -77,7 +77,7 @@ local function fetch_data()
 end
 
 local function now()
-  local date = os.date("!*t")
+  local date = os.date('!*t')
   ---@cast date osdate
   return os.time(date)
 end
@@ -92,7 +92,8 @@ function M.update_workflow_configs(state)
   for _, workflow in ipairs(state.workflows) do
     if
       not state.workflow_configs[workflow.id]
-      or (n - state.workflow_configs[workflow.id].last_read) > WORKFLOW_CONFIG_CACHE_TTL_S
+      or (n - state.workflow_configs[workflow.id].last_read)
+        > WORKFLOW_CONFIG_CACHE_TTL_S
     then
       state.workflow_configs[workflow.id] = {
         last_read = n,
@@ -104,9 +105,9 @@ end
 
 function M.open()
   ui.open()
-  ui.split:map("n", "q", M.close, { noremap = true })
+  ui.split:map('n', 'q', M.close, { noremap = true })
 
-  ui.split:map("n", "<cr>", function()
+  ui.split:map('n', '<cr>', function()
     local workflow_run = ui.get_workflow_run()
 
     if workflow_run then
@@ -116,7 +117,7 @@ function M.open()
     end
   end, { noremap = true })
 
-  ui.split:map("n", "d", function()
+  ui.split:map('n', 'd', function()
     local workflow = ui.get_workflow()
 
     if workflow then
@@ -134,7 +135,10 @@ function M.open()
                 store.update_state(function(state)
                   state.workflow_runs = utils.uniq(function(run)
                     return run.id
-                  end, { unpack(workflow_runs), unpack(state.workflow_runs) })
+                  end, {
+                    unpack(workflow_runs),
+                    unpack(state.workflow_runs),
+                  })
                 end)
               end,
             })
@@ -145,7 +149,11 @@ function M.open()
   end, { noremap = true })
 
   M.timer = vim.loop.new_timer()
-  M.timer:start(0, Config.options.refresh_interval * 1000, vim.schedule_wrap(fetch_data))
+  M.timer:start(
+    0,
+    Config.options.refresh_interval * 1000,
+    vim.schedule_wrap(fetch_data)
+  )
 
   --TODO: This might get called after rendering..
   store.on_update(M.update_workflow_configs)

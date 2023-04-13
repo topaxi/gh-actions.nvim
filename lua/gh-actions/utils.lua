@@ -1,4 +1,4 @@
-local stringUtils = require("gh-actions.utils.string")
+local stringUtils = require('gh-actions.utils.string')
 
 local M = {
   string = stringUtils,
@@ -31,13 +31,13 @@ end
 ---@param path string
 ---@return string|nil
 function M.read_file(path)
-  local f = io.open(path, "r")
+  local f = io.open(path, 'r')
 
   if not f then
     return nil
   end
 
-  local content = f:read("*all")
+  local content = f:read('*all')
 
   f:close()
 
@@ -102,25 +102,25 @@ end
 ---@param uri string
 function M.open(uri)
   if M.file_exists(uri) then
-    return M.float({ style = "", file = uri })
+    return M.float { style = '', file = uri }
   end
 
-  local Config = require("gh-actions.config")
+  local Config = require('gh-actions.config')
   local cmd
 
   if Config.options.browser then
     cmd = { Config.options.browser, uri }
-  elseif vim.fn.has("win32") == 1 then
-    cmd = { "explorer", uri }
-  elseif vim.fn.has("macunix") == 1 then
-    cmd = { "open", uri }
+  elseif vim.fn.has('win32') == 1 then
+    cmd = { 'explorer', uri }
+  elseif vim.fn.has('macunix') == 1 then
+    cmd = { 'open', uri }
   else
-    if vim.fn.executable("xdg-open") == 1 then
-      cmd = { "xdg-open", uri }
-    elseif vim.fn.executable("wslview") == 1 then
-      cmd = { "wslview", uri }
+    if vim.fn.executable('xdg-open') == 1 then
+      cmd = { 'xdg-open', uri }
+    elseif vim.fn.executable('wslview') == 1 then
+      cmd = { 'wslview', uri }
     else
-      cmd = { "open", uri }
+      cmd = { 'open', uri }
     end
   end
 
@@ -128,11 +128,11 @@ function M.open(uri)
 
   if ret <= 0 then
     local msg = {
-      "Failed to open uri",
+      'Failed to open uri',
       ret,
       vim.inspect(cmd),
     }
-    vim.notify(table.concat(msg, "\n"), vim.log.levels.ERROR)
+    vim.notify(table.concat(msg, '\n'), vim.log.levels.ERROR)
   end
 end
 

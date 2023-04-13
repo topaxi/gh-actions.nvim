@@ -1,6 +1,6 @@
-local Config = require("gh-actions.config")
-local Buffer = require("gh-actions.ui.buffer")
-local utils = require("gh-actions.utils")
+local Config = require('gh-actions.config')
+local Buffer = require('gh-actions.ui.buffer')
+local utils = require('gh-actions.utils')
 
 ---TODO: Shade background like https://github.com/akinsho/toggleterm.nvim/blob/2e477f7ee8ee8229ff3158e3018a067797b9cd38/lua/toggleterm/colors.lua
 
@@ -24,11 +24,12 @@ local function get_workflow_run_icon(run)
     return Config.options.icons.status.unknown
   end
 
-  if run.status == "completed" then
+  if run.status == 'completed' then
     return Config.options.icons.conclusion[run.conclusion] or run.conclusion
   end
 
-  return Config.options.icons.status[run.status] or Config.options.icons.status.unknown
+  return Config.options.icons.status[run.status]
+    or Config.options.icons.status.unknown
 end
 
 ---@param run { status: string, conclusion: string }
@@ -39,17 +40,24 @@ local function get_status_highlight(run, prefix)
     return nil
   end
 
-  if run.status == "completed" then
-    return "GhActions" .. utils.string.upper_first(prefix) .. utils.string.upper_first(run.conclusion)
+  if run.status == 'completed' then
+    return 'GhActions'
+      .. utils.string.upper_first(prefix)
+      .. utils.string.upper_first(run.conclusion)
   end
 
-  return "GhActions" .. utils.string.upper_first(prefix) .. utils.string.upper_first(run.status)
+  return 'GhActions'
+    .. utils.string.upper_first(prefix)
+    .. utils.string.upper_first(run.status)
 end
 
 ---@param store { get_state: fun(): GhActionsState }
 ---@return GhActionsRender
 function GhActionsRender.new(store)
-  local self = setmetatable({}, { __index = setmetatable(GhActionsRender, { __index = Buffer }) })
+  local self = setmetatable(
+    {},
+    { __index = setmetatable(GhActionsRender, { __index = Buffer }) }
+  )
   ---@cast self GhActionsRender
 
   self.store = store
@@ -74,9 +82,9 @@ end
 ---@param state GhActionsState
 function GhActionsRender:title(state)
   if not state.repo then
-    self:append("Github Workflows"):nl():nl()
+    self:append('Github Workflows'):nl():nl()
   else
-    self:append(string.format("Github Workflows for %s", state.repo)):nl():nl()
+    self:append(string.format('Github Workflows for %s', state.repo)):nl():nl()
   end
 end
 
@@ -106,28 +114,28 @@ function GhActionsRender:workflow(state, workflow, runs)
 
   self
     :status_icon(runs[1])
-    :append(" ")
-    :append(workflow.name, get_status_highlight(runs[1], "run"))
+    :append(' ')
+    :append(workflow.name, get_status_highlight(runs[1], 'run'))
     :append(
       state.workflow_configs[workflow.id]
           and state.workflow_configs[workflow.id].config.on.workflow_dispatch
-          and (" " .. Config.options.icons.workflow_dispatch)
-        or ""
+          and (' ' .. Config.options.icons.workflow_dispatch)
+        or ''
     )
     :nl()
 
   -- TODO cutting down on how many we list here, as we fetch 100 overall repo
   -- runs on opening the split. I guess we do want to have this configurable.
-  for _, run in ipairs({ unpack(runs, 1, runs_n) }) do
+  for _, run in ipairs { unpack(runs, 1, runs_n) } do
     self:workflow_run(state, run)
   end
 
-  self:append_location({
-    kind = "workflow",
+  self:append_location {
+    kind = 'workflow',
     value = workflow,
     from = workflowline,
     to = self:get_current_line() - 1,
-  })
+  }
 
   if #runs > 0 then
     self:nl()
@@ -141,56 +149,67 @@ function GhActionsRender:workflow_run(state, run)
 
   self
     :status_icon(run, { indent = 1 })
-    :append(" ")
-    :append(run.head_commit.message:gsub("\n.*", ""), get_status_highlight(run, "run"))
+    :append(' ')
+    :append(
+      run.head_commit.message:gsub('\n.*', ''),
+      get_status_highlight(run, 'run')
+    )
     :nl()
 
-  if run.conclusion ~= "success" then
+  if run.conclusion ~= 'success' then
     for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
       self:workflow_job(job)
     end
   end
 
-  self:append_location({
-    kind = "workflow_run",
+  self:append_location {
+    kind = 'workflow_run',
     value = run,
     from = runline,
     to = self:get_current_line() - 1,
-  })
+  }
 end
 
 ---@param job GhWorkflowRunJob
 function GhActionsRender:workflow_job(job)
   local jobline = self:get_current_line()
 
-  self:status_icon(job, { indent = 2 }):append(" "):append(job.name, get_status_highlight(job, "job")):nl()
+  self
+    :status_icon(job, { indent = 2 })
+    :append(' ')
+    :append(job.name, get_status_highlight(job, 'job'))
+    :nl()
 
-  if job.conclusion ~= "success" then
+  if job.conclusion ~= 'success' then
     for _, step in ipairs(job.steps) do
       self:workflow_step(step)
     end
   end
 
-  self:append_location({
-    kind = "workflow_job",
+  self:append_location {
+    kind = 'workflow_job',
     value = job,
     from = jobline,
     to = self:get_current_line() - 1,
-  })
+  }
 end
 
 ---@param step GhWorkflowRunJobStep
 function GhActionsRender:workflow_step(step)
   local stepline = self:get_current_line()
 
-  self:status_icon(step, { indent = 3 }):append(" "):append(step.name, get_status_highlight(step, "step")):nl()
+  self
+    :status_icon(step, { indent = 3 })
+    :append(' ')
+    :append(step.name, get_status_highlight(step, 'step'))
+    :nl()
 
-  self:append_location({
-    kind = "workflow_step",
+  self:append_location {
+    kind = 'workflow_step',
     value = step,
     from = stepline,
     to = self:get_current_line() - 1,
-  })
+  }
 end
 
 ---@param status { status: string, conclusion: string }
@@ -198,7 +217,11 @@ end
 function GhActionsRender:status_icon(status, opts)
   opts = opts or {}
 
-  self:append(get_workflow_run_icon(status), get_status_highlight(status, "RunIcon"), opts)
+  self:append(
+    get_workflow_run_icon(status),
+    get_status_highlight(status, 'RunIcon'),
+    opts
+  )
 
   return self
 end

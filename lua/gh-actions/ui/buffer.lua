@@ -1,4 +1,4 @@
-local Config = require("gh-actions.config")
+local Config = require('gh-actions.config')
 
 ---@class TextSegment
 ---@field str string
@@ -9,7 +9,7 @@ local Config = require("gh-actions.config")
 ---@class Buffer
 ---@field private _lines Line[]
 local Buffer = {
-  ns = vim.api.nvim_create_namespace("gh-actions"),
+  ns = vim.api.nvim_create_namespace('gh-actions'),
 }
 
 function Buffer.new()
@@ -28,7 +28,11 @@ function Buffer:append_line(line, opts)
   opts = opts or {}
 
   if opts.indent then
-    table.insert(line, 1, { str = string.rep(" ", opts.indent * Config.options.indent) })
+    table.insert(
+      line,
+      1,
+      { str = string.rep(' ', opts.indent * Config.options.indent) }
+    )
   end
 
   table.insert(self._lines, line)
@@ -49,7 +53,7 @@ function Buffer:append(str, hl, opts)
   local line = str
 
   if opts.indent then
-    line = string.rep(" ", opts.indent * Config.options.indent) .. line
+    line = string.rep(' ', opts.indent * Config.options.indent) .. line
   end
 
   table.insert(self._lines[#self._lines], { str = line, hl = hl })
@@ -73,7 +77,7 @@ local function get_line_str(line)
     vim.tbl_map(function(segment)
       return segment.str
     end, line),
-    ""
+    ''
   )
 end
 
@@ -93,22 +97,32 @@ function Buffer:render(bufnr)
       ---@type string|table|nil
       local extmark = segment.hl
       if extmark then
-        if type(extmark) == "string" then
+        if type(extmark) == 'string' then
           extmark = { hl_group = extmark, end_col = col + width }
         end
 
         local extmark_col = extmark.col or col
         extmark.col = nil
         local line_nr = l - 1
-        local ok = pcall(vim.api.nvim_buf_set_extmark, bufnr, self.ns, line_nr, extmark_col, extmark)
+        local ok = pcall(
+          vim.api.nvim_buf_set_extmark,
+          bufnr,
+          self.ns,
+          line_nr,
+          extmark_col,
+          extmark
+        )
         if not ok then
-          vim.notify("Failed to set extmark. Please report a bug with this info:\n" .. vim.inspect({
-            segment = segment,
-            line_nr = line_nr,
-            line = line,
-            extmark_col = extmark_col,
-            extmark = extmark,
-          }))
+          vim.notify(
+            'Failed to set extmark. Please report a bug with this info:\n'
+              .. vim.inspect {
+                segment = segment,
+                line_nr = line_nr,
+                line = line,
+                extmark_col = extmark_col,
+                extmark = extmark,
+              }
+          )
         end
       end
 
