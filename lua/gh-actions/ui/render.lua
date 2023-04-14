@@ -109,7 +109,7 @@ end
 ---@param workflow GhWorkflow
 ---@param runs GhWorkflowRun[]
 function GhActionsRender:workflow(state, workflow, runs)
-  local workflowline = self:get_current_line()
+  local workflowline = self:get_current_line_nr()
   local runs_n = math.min(5, #runs)
 
   self
@@ -134,7 +134,6 @@ function GhActionsRender:workflow(state, workflow, runs)
     kind = 'workflow',
     value = workflow,
     from = workflowline,
-    to = self:get_current_line() - 1,
   }
 
   if #runs > 0 then
@@ -145,7 +144,7 @@ end
 ---@param state GhActionsState
 ---@param run GhWorkflowRun
 function GhActionsRender:workflow_run(state, run)
-  local runline = self:get_current_line()
+  local runline = self:get_current_line_nr()
 
   self
     :status_icon(run, { indent = 1 })
@@ -166,13 +165,12 @@ function GhActionsRender:workflow_run(state, run)
     kind = 'workflow_run',
     value = run,
     from = runline,
-    to = self:get_current_line() - 1,
   }
 end
 
 ---@param job GhWorkflowRunJob
 function GhActionsRender:workflow_job(job)
-  local jobline = self:get_current_line()
+  local jobline = self:get_current_line_nr()
 
   self
     :status_icon(job, { indent = 2 })
@@ -190,13 +188,12 @@ function GhActionsRender:workflow_job(job)
     kind = 'workflow_job',
     value = job,
     from = jobline,
-    to = self:get_current_line() - 1,
   }
 end
 
 ---@param step GhWorkflowRunJobStep
 function GhActionsRender:workflow_step(step)
-  local stepline = self:get_current_line()
+  local stepline = self:get_current_line_nr()
 
   self
     :status_icon(step, { indent = 3 })
@@ -208,7 +205,6 @@ function GhActionsRender:workflow_step(step)
     kind = 'workflow_step',
     value = step,
     from = stepline,
-    to = self:get_current_line() - 1,
   }
 end
 
@@ -228,7 +224,10 @@ end
 
 ---@param location GhActionsRenderLocation
 function GhActionsRender:append_location(location)
-  table.insert(self.locations, location)
+  table.insert(
+    self.locations,
+    vim.tbl_extend('keep', location, { to = self:get_current_line_nr() - 1 })
+  )
 end
 
 return GhActionsRender

@@ -67,7 +67,7 @@ function Buffer:nl()
   return self
 end
 
-function Buffer:get_current_line()
+function Buffer:get_current_line_nr()
   return math.max(1, #self._lines)
 end
 
