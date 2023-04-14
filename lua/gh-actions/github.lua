@@ -214,6 +214,8 @@ end
 ---@field conclusion string
 ---@field name string
 ---@field steps GhWorkflowRunJobStep[]
+---@field url string
+---@field html_url string
 
 ---@class GhWorkflowRunJobsResponse
 ---@field total_count number

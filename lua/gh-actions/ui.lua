@@ -38,6 +38,19 @@ function M.get_workflow_run(line)
   end
 end
 
+---TODO: This should be a local function
+---@param line? integer
+---@return GhWorkflowRunJob|nil
+function M.get_workflow_job(line)
+  line = get_cursor_line(line)
+
+  for _, loc in ipairs(M.renderer.locations) do
+    if loc.kind == 'workflow_job' and line >= loc.from and line <= loc.to then
+      return loc.value
+    end
+  end
+end
+
 local function is_visible()
   return M.split.bufnr ~= nil and vim.bo[M.split.bufnr] ~= nil
 end
