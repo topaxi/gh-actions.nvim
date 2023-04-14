@@ -17,6 +17,8 @@ local GhActionsRender = {
   locations = {},
 }
 
+setmetatable(GhActionsRender, { __index = Buffer })
+
 ---@param run { status: string, conclusion: string }
 ---@return string
 local function get_workflow_run_icon(run)
@@ -54,10 +56,9 @@ end
 ---@param store { get_state: fun(): GhActionsState }
 ---@return GhActionsRender
 function GhActionsRender.new(store)
-  local self = setmetatable(
-    {},
-    { __index = setmetatable(GhActionsRender, { __index = Buffer }) }
-  )
+  local self = setmetatable(Buffer.new { indent = Config.options.indent }, {
+    __index = GhActionsRender,
+  })
   ---@cast self GhActionsRender
 
   self.store = store

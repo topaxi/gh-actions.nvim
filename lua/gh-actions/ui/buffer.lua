@@ -1,5 +1,3 @@
-local Config = require('gh-actions.config')
-
 ---@class TextSegment
 ---@field str string
 ---@field hl string|nil
@@ -7,17 +5,22 @@ local Config = require('gh-actions.config')
 ---@alias Line TextSegment[]
 
 ---@class Buffer
----@field private _lines Line[]
+---@field protected _lines Line[]
+---@field protected _indent number
 local Buffer = {
   ns = vim.api.nvim_create_namespace('gh-actions'),
 }
 
-function Buffer.new()
+---@param opts? { indent?: integer }
+function Buffer.new(opts)
+  opts = opts or {}
+
   local self = setmetatable({}, {
     __index = Buffer,
   })
 
   self._lines = {}
+  self._indent = opts.indent or 2
 
   return self
 end
@@ -28,11 +31,7 @@ function Buffer:append_line(line, opts)
   opts = opts or {}
 
   if opts.indent then
-    table.insert(
-      line,
-      1,
-      { str = string.rep(' ', opts.indent * Config.options.indent) }
-    )
+    table.insert(line, 1, { str = string.rep(' ', opts.indent * self._indent) })
   end
 
   table.insert(self._lines, line)
@@ -53,7 +52,7 @@ function Buffer:append(str, hl, opts)
   local line = str
 
   if opts.indent then
-    line = string.rep(' ', opts.indent * Config.options.indent) .. line
+    line = string.rep(' ', opts.indent * self._indent) .. line
   end
 
   table.insert(self._lines[#self._lines], { str = line, hl = hl })
