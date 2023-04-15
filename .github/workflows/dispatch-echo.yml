@@ -9,6 +9,11 @@ on:
         type: string
         required: false
         default: Hello, World!
+      sleep:
+        description: Duration
+        type: string
+        required: false
+        default: '30'
 
 jobs:
   echo:
@@ -21,7 +26,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Sleep
-        run: sleep 30
+        run: sleep ${{ inputs.sleep }}
 
       - name: Echo
         run: echo ${{ inputs.value }}
