@@ -44,10 +44,10 @@ function M.read_file(path)
   return content
 end
 
----@generic T : table
----@param fn any
----@param tbl T
----@return T
+---@generic V
+---@param fn fun(arg1: V): any
+---@param tbl table<any, V>
+---@return table<integer, V>
 function M.uniq(fn, tbl)
   local set = {}
   local unique_table = {}
