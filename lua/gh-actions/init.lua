@@ -8,6 +8,7 @@ local utils = require('gh-actions.utils')
 local M = {
   setup_called = false,
   init_root = '',
+  ---@type uv_timer_t|nil
   timer = nil,
 }
 
