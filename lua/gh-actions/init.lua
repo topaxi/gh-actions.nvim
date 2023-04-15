@@ -107,19 +107,31 @@ function M.open()
   ui.open()
   ui.split:map('n', 'q', M.close, { noremap = true })
 
-  ui.split:map('n', '<cr>', function()
-    local workflow_job = ui.get_workflow_job()
+  ui.split:map('n', 'gw', function()
+    local workflow = ui.get_workflow()
 
-    if workflow_job then
-      utils.open(workflow_job.html_url)
+    if workflow then
+      utils.open(workflow.html_url)
 
       return
     end
+  end, { noremap = true })
 
+  ui.split:map('n', 'gr', function()
     local workflow_run = ui.get_workflow_run()
 
     if workflow_run then
       utils.open(workflow_run.html_url)
+
+      return
+    end
+  end, { noremap = true })
+
+  ui.split:map('n', 'gj', function()
+    local workflow_job = ui.get_workflow_job()
+
+    if workflow_job then
+      utils.open(workflow_job.html_url)
 
       return
     end

@@ -18,11 +18,7 @@ end
 function M.get_workflow(line)
   line = get_cursor_line(line)
 
-  for _, loc in ipairs(M.renderer.locations) do
-    if loc.kind == 'workflow' and line >= loc.from and line <= loc.to then
-      return loc.value
-    end
-  end
+  return M.renderer:get_location('workflow', line)
 end
 
 ---TODO: This should be a local function
@@ -31,11 +27,7 @@ end
 function M.get_workflow_run(line)
   line = get_cursor_line(line)
 
-  for _, loc in ipairs(M.renderer.locations) do
-    if loc.kind == 'workflow_run' and line >= loc.from and line <= loc.to then
-      return loc.value
-    end
-  end
+  return M.renderer:get_location('workflow_run', line)
 end
 
 ---TODO: This should be a local function
@@ -44,11 +36,7 @@ end
 function M.get_workflow_job(line)
   line = get_cursor_line(line)
 
-  for _, loc in ipairs(M.renderer.locations) do
-    if loc.kind == 'workflow_job' and line >= loc.from and line <= loc.to then
-      return loc.value
-    end
-  end
+  return M.renderer:get_location('workflow_job', line)
 end
 
 local function is_visible()

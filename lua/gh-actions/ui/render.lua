@@ -69,6 +69,7 @@ end
 ---@param bufnr integer
 function GhActionsRender:render(bufnr)
   self._lines = {}
+  self.locations = {}
 
   local state = self.store:get_state()
 
@@ -110,32 +111,27 @@ end
 ---@param workflow GhWorkflow
 ---@param runs GhWorkflowRun[]
 function GhActionsRender:workflow(state, workflow, runs)
-  local workflowline = self:get_current_line_nr()
-  local runs_n = math.min(5, #runs)
+  self:with_location({ kind = 'workflow', value = workflow }, function()
+    local runs_n = math.min(5, #runs)
 
-  self
-    :status_icon(runs[1])
-    :append(' ')
-    :append(workflow.name, get_status_highlight(runs[1], 'run'))
-    :append(
-      state.workflow_configs[workflow.id]
-          and state.workflow_configs[workflow.id].config.on.workflow_dispatch
-          and (' ' .. Config.options.icons.workflow_dispatch)
-        or ''
-    )
-    :nl()
+    self
+      :status_icon(runs[1])
+      :append(' ')
+      :append(workflow.name, get_status_highlight(runs[1], 'run'))
+      :append(
+        state.workflow_configs[workflow.id]
+            and state.workflow_configs[workflow.id].config.on.workflow_dispatch
+            and (' ' .. Config.options.icons.workflow_dispatch)
+          or ''
+      )
+      :nl()
 
-  -- TODO cutting down on how many we list here, as we fetch 100 overall repo
-  -- runs on opening the split. I guess we do want to have this configurable.
-  for _, run in ipairs { unpack(runs, 1, runs_n) } do
-    self:workflow_run(state, run)
-  end
-
-  self:append_location {
-    kind = 'workflow',
-    value = workflow,
-    from = workflowline,
-  }
+    -- TODO cutting down on how many we list here, as we fetch 100 overall repo
+    -- runs on opening the split. I guess we do want to have this configurable.
+    for _, run in ipairs { unpack(runs, 1, runs_n) } do
+      self:workflow_run(state, run)
+    end
+  end)
 
   if #runs > 0 then
     self:nl()
@@ -145,68 +141,50 @@ end
 ---@param state GhActionsState
 ---@param run GhWorkflowRun
 function GhActionsRender:workflow_run(state, run)
-  local runline = self:get_current_line_nr()
+  self:with_location({ kind = 'workflow_run', value = run }, function()
+    self
+      :status_icon(run, { indent = 1 })
+      :append(' ')
+      :append(
+        run.head_commit.message:gsub('\n.*', ''),
+        get_status_highlight(run, 'run')
+      )
+      :nl()
 
-  self
-    :status_icon(run, { indent = 1 })
-    :append(' ')
-    :append(
-      run.head_commit.message:gsub('\n.*', ''),
-      get_status_highlight(run, 'run')
-    )
-    :nl()
-
-  if run.conclusion ~= 'success' then
-    for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
-      self:workflow_job(job)
+    if run.conclusion ~= 'success' then
+      for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
+        self:workflow_job(job)
+      end
     end
-  end
-
-  self:append_location {
-    kind = 'workflow_run',
-    value = run,
-    from = runline,
-  }
+  end)
 end
 
 ---@param job GhWorkflowRunJob
 function GhActionsRender:workflow_job(job)
-  local jobline = self:get_current_line_nr()
+  self:with_location({ kind = 'workflow_job', value = job }, function()
+    self
+      :status_icon(job, { indent = 2 })
+      :append(' ')
+      :append(job.name, get_status_highlight(job, 'job'))
+      :nl()
 
-  self
-    :status_icon(job, { indent = 2 })
-    :append(' ')
-    :append(job.name, get_status_highlight(job, 'job'))
-    :nl()
-
-  if job.conclusion ~= 'success' then
-    for _, step in ipairs(job.steps) do
-      self:workflow_step(step)
+    if job.conclusion ~= 'success' then
+      for _, step in ipairs(job.steps) do
+        self:workflow_step(step)
+      end
     end
-  end
-
-  self:append_location {
-    kind = 'workflow_job',
-    value = job,
-    from = jobline,
-  }
+  end)
 end
 
 ---@param step GhWorkflowRunJobStep
 function GhActionsRender:workflow_step(step)
-  local stepline = self:get_current_line_nr()
-
-  self
-    :status_icon(step, { indent = 3 })
-    :append(' ')
-    :append(step.name, get_status_highlight(step, 'step'))
-    :nl()
-
-  self:append_location {
-    kind = 'workflow_step',
-    value = step,
-    from = stepline,
-  }
+  self:with_location({ kind = 'workflow_step', value = step }, function()
+    self
+      :status_icon(step, { indent = 3 })
+      :append(' ')
+      :append(step.name, get_status_highlight(step, 'step'))
+      :nl()
+  end)
 end
 
 ---@param status { status: string, conclusion: string }
@@ -228,6 +206,28 @@ function GhActionsRender:append_location(location)
   table.insert(
     self.locations,
     vim.tbl_extend('keep', location, { to = self:get_current_line_nr() - 1 })
+  )
+end
+
+---@param kind string
+---@param line integer
+function GhActionsRender:get_location(kind, line)
+  for _, loc in ipairs(self.locations) do
+    if loc.kind == kind and line >= loc.from and line <= loc.to then
+      return loc.value
+    end
+  end
+end
+
+---@param location GhActionsRenderLocation
+---@param fn fun()
+function GhActionsRender:with_location(location, fn)
+  local start_line_nr = self:get_current_line_nr()
+
+  fn()
+
+  self:append_location(
+    vim.tbl_extend('keep', location, { from = start_line_nr })
   )
 end
 
