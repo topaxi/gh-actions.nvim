@@ -1,3 +1,4 @@
+local job = require('plenary.job')
 local stringUtils = require('gh-actions.utils.string')
 
 local M = {
@@ -42,6 +43,22 @@ function M.read_file(path)
   f:close()
 
   return content
+end
+
+function M.read_yaml_file(path)
+  -- TODO lua-yaml is having trouble with a lot of yaml files
+  --      switching to lyaml would be a good idea. Haven't figured
+  --      out yet on how to use luarocks and modules with ffi yet
+  local yq = job:new {
+    command = 'yq',
+    args = { '-o', 'json', path },
+  }
+
+  yq:sync()
+
+  local jsonStr = table.concat(yq:result(), '\n')
+
+  return vim.json.decode(jsonStr)
 end
 
 ---@generic V

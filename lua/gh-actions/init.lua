@@ -1,3 +1,4 @@
+local Input = require('nui.input')
 local Config = require('gh-actions.config')
 local store = require('gh-actions.store')
 local git = require('gh-actions.git')
@@ -148,24 +149,71 @@ function M.open()
       --      default branch or current ref preselected?
       local default_branch = git.get_default_branch()
 
-      gh.dispatch_workflow(repo, workflow.id, default_branch, {
-        callback = function()
-          utils.delay(2000, function()
-            gh.get_workflow_runs(repo, workflow.id, 5, {
-              callback = function(workflow_runs)
-                store.update_state(function(state)
-                  state.workflow_runs = utils.uniq(function(run)
-                    return run.id
-                  end, {
-                    unpack(workflow_runs),
-                    unpack(state.workflow_runs),
-                  })
-                end)
-              end,
-            })
-          end)
-        end,
-      })
+      local workflow_config = utils.read_yaml_file(workflow.path)
+
+      if not workflow_config or not workflow_config.on.workflow_dispatch then
+        return
+      end
+
+      local inputs = workflow_config.on.workflow_dispatch.inputs
+      local questions = {}
+      local i = 0
+      local input_values = {}
+
+      local function ask_next()
+        i = i + 1
+
+        if i <= #questions or #questions == 0 then
+          questions[i]:mount()
+        else
+          gh.dispatch_workflow(repo, workflow.id, default_branch, {
+            body = { inputs = input_values or {} },
+            callback = function()
+              utils.delay(2000, function()
+                gh.get_workflow_runs(repo, workflow.id, 5, {
+                  callback = function(workflow_runs)
+                    store.update_state(function(state)
+                      state.workflow_runs = utils.uniq(function(run)
+                        return run.id
+                      end, {
+                        unpack(workflow_runs),
+                        unpack(state.workflow_runs),
+                      })
+                    end)
+                  end,
+                })
+              end)
+            end,
+          })
+        end
+      end
+
+      for name, input in pairs(inputs) do
+        local prompt = string.format('%s: ', input.description or name)
+
+        local question = Input({
+          relative = 'editor',
+          position = '50%',
+          size = {
+            width = #prompt + 32,
+          },
+          border = {
+            style = 'rounded',
+            text = { top = workflow.name },
+          },
+        }, {
+          prompt = prompt,
+          default_value = input.default,
+          on_submit = function(value)
+            input_values[name] = value
+            ask_next()
+          end,
+        })
+
+        table.insert(questions, question)
+      end
+
+      ask_next()
     end
   end, { noremap = true })
 
