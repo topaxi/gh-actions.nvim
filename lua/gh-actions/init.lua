@@ -155,20 +155,25 @@ function M.open()
         return
       end
 
-      local inputs = workflow_config.on.workflow_dispatch.inputs
+      local inputs = {}
+
+      if workflow_config.on.workflow_dispatch ~= vim.NIL then
+        inputs = workflow_config.on.workflow_dispatch.inputs
+      end
+
       local questions = {}
       local i = 0
-      local input_values = {}
+      local input_values = vim.empty_dict()
 
       local function ask_next()
         i = i + 1
 
-        if i <= #questions or #questions == 0 then
+        if #questions > 0 and i <= #questions then
           questions[i]:mount()
         else
           gh.dispatch_workflow(repo, workflow.id, default_branch, {
             body = { inputs = input_values or {} },
-            callback = function()
+            callback = function(_res)
               utils.delay(2000, function()
                 gh.get_workflow_runs(repo, workflow.id, 5, {
                   callback = function(workflow_runs)
@@ -185,6 +190,19 @@ function M.open()
               end)
             end,
           })
+
+          if #questions == 0 then
+            vim.notify(string.format('Dispatched %s', workflow.name))
+          else
+            -- TODO format by iterating instead of inspect
+            vim.notify(
+              string.format(
+                'Dispatched %s with %s',
+                workflow.name,
+                vim.inspect(input_values)
+              )
+            )
+          end
         end
       end
 
