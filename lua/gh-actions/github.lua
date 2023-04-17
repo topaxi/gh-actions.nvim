@@ -32,9 +32,9 @@ end
 local function read_gh_hosts_token(config_file)
   config_file = vim.fn.expand(config_file or '$HOME/.config/gh/hosts.yml')
 
-  local ghHostsYaml = utils.read_file(config_file) or ''
-  local ghHostsConfig = yaml.eval(ghHostsYaml)
-  local token = ghHostsConfig and ghHostsConfig['github.com'].oauth_token
+  local gh_hosts_yaml = utils.read_file(config_file) or ''
+  local gh_hosts_config = yaml.eval(gh_hosts_yaml)
+  local token = gh_hosts_config and gh_hosts_config['github.com'].oauth_token
 
   return token
 end
@@ -94,9 +94,9 @@ function M.get_workflows(repo, opts)
         end
 
         ---@type GhWorkflowsResponse | nil
-        local responseData = vim.json.decode(response.body)
+        local response_data = vim.json.decode(response.body)
 
-        local ret = responseData and responseData.workflows or {}
+        local ret = response_data and response_data.workflows or {}
 
         if opts.callback then
           return opts.callback(ret)
@@ -138,9 +138,9 @@ local function process_workflow_runs_response(opts)
     end
 
     ---@type GhWorkflowRunsResponse | nil
-    local responseData = vim.json.decode(response.body)
+    local response_data = vim.json.decode(response.body)
 
-    local ret = (responseData and responseData.workflow_runs or {})
+    local ret = (response_data and response_data.workflow_runs or {})
 
     if opts.callback then
       return opts.callback(ret)
@@ -237,9 +237,9 @@ function M.get_workflow_run_jobs(repo, workflow_run_id, per_page, opts)
         end
 
         ---@type GhWorkflowRunJobsResponse | nil
-        local responseData = vim.json.decode(response.body)
+        local response_data = vim.json.decode(response.body)
 
-        local ret = responseData and responseData.jobs or {}
+        local ret = response_data and response_data.jobs or {}
 
         if opts.callback then
           return opts.callback(ret)
