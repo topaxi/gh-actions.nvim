@@ -151,7 +151,7 @@ function GhActionsRender:workflow_run(state, run)
       )
       :nl()
 
-    if run.conclusion ~= 'success' then
+    if run.status ~= 'completed' then
       for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
         self:workflow_job(job)
       end
@@ -168,7 +168,7 @@ function GhActionsRender:workflow_job(job)
       :append(job.name, get_status_highlight(job, 'job'))
       :nl()
 
-    if job.conclusion ~= 'success' then
+    if job.status ~= 'completed' then
       for _, step in ipairs(job.steps) do
         self:workflow_step(step)
       end
