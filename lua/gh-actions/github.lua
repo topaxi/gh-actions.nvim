@@ -6,25 +6,20 @@ local rust = require('gh-actions.rust')
 local M = {}
 
 function M.get_current_repository()
-  -- 1. get git dir
-  -- 2. get current branch
-  -- 3. get origin of branch
-  -- 4. parse github owner/repo from origin
-  local gh = job:new {
-    command = 'gh',
+  local origin_url_job = job:new {
+    command = 'git',
     args = {
-      'repo',
-      'view',
-      '--json',
-      'owner,name',
-      '--template',
-      '{{.owner.login}}/{{.name}}',
+      'config',
+      '--get',
+      'remote.origin.url',
     },
   }
 
-  gh:sync()
+  origin_url_job:sync()
 
-  return table.concat(gh:result(), '')
+  local origin_url = table.concat(origin_url_job:result(), '')
+
+  return origin_url:match('github.com[:/](.+)%.git$')
 end
 
 ---@param config_file? string
