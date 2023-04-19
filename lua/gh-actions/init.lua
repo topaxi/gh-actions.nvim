@@ -157,8 +157,7 @@ function M.open()
 
       local inputs = {}
 
-      -- TODO: Can we somehow encode serde_yaml null to vim.NIL?
-      if type(workflow_config.on.workflow_dispatch) ~= 'userdata' then
+      if not utils.is_nil(workflow_config.on.workflow_dispatch) then
         inputs = workflow_config.on.workflow_dispatch.inputs
       end
 

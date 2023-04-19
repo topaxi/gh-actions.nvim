@@ -12,6 +12,7 @@ fn yaml_to_lua<'lua>(lua: &'lua Lua, yamlstr: String) -> LuaResult<mlua::Value<'
 fn libgh_actions_rust(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
 
+    exports.set("NIL", lua.null())?;
     exports.set("parse_yaml", lua.create_function(yaml_to_lua)?)?;
 
     Ok(exports)

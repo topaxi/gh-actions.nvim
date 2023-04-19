@@ -143,4 +143,10 @@ function M.open(uri)
   end
 end
 
+---@param value any
+---@return boolean
+function M.is_nil(value)
+  return value == nil or value == vim.NIL or value == rust.NIL
+end
+
 return M
