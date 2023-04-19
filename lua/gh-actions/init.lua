@@ -1,4 +1,5 @@
 local Input = require('nui.input')
+local Menu = require('nui.menu')
 local Config = require('gh-actions.config')
 local store = require('gh-actions.store')
 local git = require('gh-actions.git')
@@ -105,6 +106,50 @@ function M.update_workflow_configs(state)
   end
 end
 
+---@param opts { prompt: string, title: string, default_value: string, on_submit: fun(value: string) }
+local function text(opts)
+  return Input({
+    relative = 'editor',
+    position = '50%',
+    size = {
+      width = #opts.prompt + 32,
+    },
+    border = {
+      style = 'rounded',
+      text = { top = opts.title },
+    },
+  }, {
+    prompt = opts.prompt,
+    default_value = opts.default_value,
+    on_submit = opts.on_submit,
+  })
+end
+
+---@param opts { prompt: string, title: string, options: string[], default_value: string, on_submit: fun(value: { text: string }) }
+local function menu(opts)
+  local lines = { Menu.separator(opts.prompt) }
+
+  for _, option in ipairs(opts.options) do
+    table.insert(lines, Menu.item(option))
+  end
+
+  return Menu({
+    relative = 'editor',
+    position = '50%',
+    size = {
+      width = #opts.prompt + 32,
+    },
+    border = {
+      style = 'rounded',
+      text = { top = opts.title },
+    },
+  }, {
+    lines = lines,
+    default_value = opts.default_value,
+    on_submit = opts.on_submit,
+  })
+end
+
 function M.open()
   ui.open()
   ui.split:map('n', 'q', M.close, { noremap = true })
@@ -209,26 +254,32 @@ function M.open()
       for name, input in pairs(inputs) do
         local prompt = string.format('%s: ', input.description or name)
 
-        local question = Input({
-          relative = 'editor',
-          position = '50%',
-          size = {
-            width = #prompt + 32,
-          },
-          border = {
-            style = 'rounded',
-            text = { top = workflow.name },
-          },
-        }, {
-          prompt = prompt,
-          default_value = input.default,
-          on_submit = function(value)
-            input_values[name] = value
-            ask_next()
-          end,
-        })
+        if input.type == 'choice' then
+          local question = menu {
+            prompt = prompt,
+            title = workflow.name,
+            options = input.options,
+            default_value = input.default,
+            on_submit = function(value)
+              input_values[name] = value.text
+              ask_next()
+            end,
+          }
 
-        table.insert(questions, question)
+          table.insert(questions, question)
+        else
+          local question = text {
+            prompt = prompt,
+            title = workflow.name,
+            default_value = input.default,
+            on_submit = function(value)
+              input_values[name] = value
+              ask_next()
+            end,
+          }
+
+          table.insert(questions, question)
+        end
       end
 
       ask_next()
