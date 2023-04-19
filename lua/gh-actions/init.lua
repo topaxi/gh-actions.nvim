@@ -125,7 +125,7 @@ local function text(opts)
   })
 end
 
----@param opts { prompt: string, title: string, options: string[], default_value: string, on_submit: fun(value: { text: string }) }
+---@param opts { prompt: string, title: string, options: string[], on_submit: fun(value: { text: string }) }
 local function menu(opts)
   local lines = { Menu.separator(opts.prompt) }
 
@@ -145,7 +145,6 @@ local function menu(opts)
     },
   }, {
     lines = lines,
-    default_value = opts.default_value,
     on_submit = opts.on_submit,
   })
 end
@@ -259,7 +258,6 @@ function M.open()
             prompt = prompt,
             title = workflow.name,
             options = input.options,
-            default_value = input.default,
             on_submit = function(value)
               input_values[name] = value.text
               ask_next()
