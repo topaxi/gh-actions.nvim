@@ -48,11 +48,7 @@ end
 function M.read_yaml_file(path)
   local yamlstr = M.read_file(path)
 
-  local parsed = rust.parse_yaml(yamlstr or '')
-
-  print(vim.inspect(parsed))
-
-  return parsed
+  return rust.parse_yaml(yamlstr or '')
 end
 
 ---@generic V
