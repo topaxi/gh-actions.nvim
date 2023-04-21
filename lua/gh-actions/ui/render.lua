@@ -115,6 +115,7 @@ function GhActionsRender:workflow(state, workflow, runs)
     local runs_n = math.min(5, #runs)
 
     self
+      :fold_icon(#runs == 0)
       :status_icon(runs[1])
       :append(' ')
       :append(workflow.name, get_status_highlight(runs[1], 'run'))
@@ -142,8 +143,13 @@ end
 ---@param run GhWorkflowRun
 function GhActionsRender:workflow_run(state, run)
   self:with_location({ kind = 'workflow_run', value = run }, function()
+    local folded = not (
+        state.folds[run.id] == nil and run.status ~= 'completed'
+      ) or state.folds[run.id]
+
     self
-      :status_icon(run, { indent = 1 })
+      :fold_icon(folded, { indent = 1 })
+      :status_icon(run)
       :append(' ')
       :append(
         run.head_commit.message:gsub('\n.*', ''),
@@ -151,24 +157,30 @@ function GhActionsRender:workflow_run(state, run)
       )
       :nl()
 
-    if run.status ~= 'completed' then
+    if folded then
       for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
-        self:workflow_job(job)
+        self:workflow_job(state, job)
       end
     end
   end)
 end
 
+---@param state GhActionsState
 ---@param job GhWorkflowRunJob
-function GhActionsRender:workflow_job(job)
+function GhActionsRender:workflow_job(state, job)
   self:with_location({ kind = 'workflow_job', value = job }, function()
+    local folded = not (
+      state.folds[job.id] == nil and job.status ~= 'completed'
+    ) or state.folds[job.id]
+
     self
-      :status_icon(job, { indent = 2 })
+      :fold_icon(folded, { indent = 2 })
+      :status_icon(job)
       :append(' ')
       :append(job.name, get_status_highlight(job, 'job'))
       :nl()
 
-    if job.status ~= 'completed' then
+    if folded then
       for _, step in ipairs(job.steps) do
         self:workflow_step(step)
       end
@@ -197,6 +209,14 @@ function GhActionsRender:status_icon(status, opts)
     get_status_highlight(status, 'RunIcon'),
     opts
   )
+
+  return self
+end
+
+---@param folded boolean
+---@param opts? { indent?: number | nil }
+function GhActionsRender:fold_icon(folded, opts)
+  self:append(folded and ' ' or ' ', nil, opts)
 
   return self
 end

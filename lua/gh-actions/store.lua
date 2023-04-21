@@ -10,6 +10,7 @@ local utils = require('gh-actions.utils')
 ---@field workflow_runs GhWorkflowRun[]
 ---@field workflow_jobs table<integer, GhWorkflowRunJob[]>
 ---@field workflow_configs table<integer, GhActionsStateWorkflowConfig>
+---@field folds table<any, boolean>
 
 ---@type GhActionsState
 local initialState = {
@@ -18,6 +19,7 @@ local initialState = {
   workflow_runs = {},
   workflow_jobs = {},
   workflow_configs = {},
+  folds = {},
 }
 
 local M = {
