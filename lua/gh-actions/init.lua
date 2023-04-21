@@ -1,5 +1,6 @@
 local Input = require('nui.input')
 local Menu = require('nui.menu')
+local event = require('nui.utils.autocmd').event
 local Config = require('gh-actions.config')
 local store = require('gh-actions.store')
 local git = require('gh-actions.git')
@@ -146,6 +147,12 @@ local function menu(opts)
   }, {
     lines = lines,
     on_submit = opts.on_submit,
+    keymap = {
+      focus_next = { 'j', '<Down>', '<Tab>' },
+      focus_prev = { 'k', '<Up>', '<S-Tab>' },
+      close = { '<Esc>', '<C-c>' },
+      submit = { '<CR>', '<Space>' },
+    },
   })
 end
 
@@ -264,6 +271,10 @@ function M.open()
             end,
           }
 
+          question:on(event.BufLeave, function()
+            question:unmount()
+          end)
+
           table.insert(questions, question)
         else
           local question = text {
@@ -275,6 +286,10 @@ function M.open()
               ask_next()
             end,
           }
+
+          question:on(event.BufLeave, function()
+            question:unmount()
+          end)
 
           table.insert(questions, question)
         end
