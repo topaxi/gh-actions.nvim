@@ -5,6 +5,16 @@ local rust = require('gh-actions.rust')
 
 local M = {}
 
+---@param str string
+---@return string
+local function strip_git_suffix(str)
+  if str:sub(-4) == '.git' then
+    return str:sub(1, -5)
+  end
+
+  return str
+end
+
 function M.get_current_repository()
   local origin_url_job = job:new {
     command = 'git',
@@ -19,7 +29,7 @@ function M.get_current_repository()
 
   local origin_url = table.concat(origin_url_job:result(), '')
 
-  return origin_url:match('github.com[:/](.+)%.git$')
+  return strip_git_suffix(origin_url):match('github.com[:/](.+)$')
 end
 
 ---@param config_file? string
