@@ -2,6 +2,10 @@
 
 The gh-actions plugin for Neovim allows developers to easily manage and dispatch their GitHub Actions workflow runs directly from within the editor.
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/213788/234685256-e915dc9c-1d79-4d64-b771-be1f736a203b.png" alt="Screenshot of gh-actions">
+</p>
+
 ## Features
 
 - List workflows and their runs for the current repository
