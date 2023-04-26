@@ -15,6 +15,7 @@ The gh-actions plugin for Neovim allows developers to easily manage and dispatch
 
 - Rerun a failed workflow
 - Configurable keybindings
+- `gw` (goto workflow) should open workflow file in buffer instead of browser
 
 ## Installation
 
