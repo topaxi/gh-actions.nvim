@@ -95,8 +95,8 @@ function M.update_workflow_configs(state)
 
   for _, workflow in ipairs(state.workflows) do
     if
-      not state.workflow_configs[workflow.id]
-      or (n - state.workflow_configs[workflow.id].last_read)
+        not state.workflow_configs[workflow.id]
+        or (n - state.workflow_configs[workflow.id].last_read)
         > WORKFLOW_CONFIG_CACHE_TTL_S
     then
       state.workflow_configs[workflow.id] = {
@@ -190,6 +190,7 @@ function M.open()
     end
   end, { noremap = true })
 
+  -- TODO Move this into its own module, ui?
   ui.split:map('n', 'd', function()
     local workflow = ui.get_workflow()
 

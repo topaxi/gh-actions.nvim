@@ -1,8 +1,11 @@
 ---@class GhActionsConfig
 local defaultConfig = {
+  --- The browser executable path to open workflow runs/jobs in
   ---@type string|nil
   browser = nil,
+  --- Interval to refresh in seconds
   refresh_interval = 10,
+  --- How much workflow runs and jobs should be indented
   indent = 2,
   ---@class GhActionsIcons
   icons = {
