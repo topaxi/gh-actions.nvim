@@ -28,6 +28,9 @@ jobs:
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
           ln -s "$(pwd)" ~/.local/share/nvim/site/pack/vendor/start
 
+      - name: Build rust module
+        run: make
+
       - name: Setup neovim
         uses: rhysd/action-setup-vim@v1
         with:
