@@ -29,7 +29,9 @@ jobs:
           ln -s "$(pwd)" ~/.local/share/nvim/site/pack/vendor/start
 
       - name: Build rust module
-        run: make
+        run: |
+          sudo apt install -y libluajit-5.1-dev
+          make
 
       - name: Setup neovim
         uses: rhysd/action-setup-vim@v1
