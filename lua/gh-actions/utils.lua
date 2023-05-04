@@ -1,5 +1,5 @@
 local stringUtils = require('gh-actions.utils.string')
-local rust = require('gh-actions.rust')
+local has_rust_module, rust = pcall(require, 'gh-actions.rust')
 
 local M = {
   string = stringUtils,
@@ -48,7 +48,17 @@ end
 function M.read_yaml_file(path)
   local yamlstr = M.read_file(path)
 
-  return rust.parse_yaml(yamlstr or '')
+  return M.parse_yaml(yamlstr)
+end
+
+---@param yamlstr string|nil
+---@return table|nil
+function M.parse_yaml(yamlstr)
+  if has_rust_module then
+    return rust.parse_yaml(yamlstr or '')
+  else
+    return vim.fn.json_decode(vim.fn.system('yq', yamlstr))
+  end
 end
 
 ---@generic V
@@ -146,7 +156,9 @@ end
 ---@param value any
 ---@return boolean
 function M.is_nil(value)
-  return value == nil or value == vim.NIL or value == rust.NIL
+  return value == nil
+    or value == vim.NIL
+    or (has_rust_module and value == rust.NIL)
 end
 
 return M

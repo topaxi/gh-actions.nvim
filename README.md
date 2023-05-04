@@ -21,6 +21,8 @@ The gh-actions plugin for Neovim allows developers to easily manage and dispatch
 
 ### Dependencies
 
+Either have the cli [yq](https://github.com/mikefarah/yq) installed or:
+
 - [GNU Make](https://www.gnu.org/software/make/)
 - [Cargo](https://doc.rust-lang.org/cargo/)
 
@@ -35,6 +37,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
   keys = {
     { '<leader>gh', '<cmd>GhActions<cr>', desc = 'Open Github Actions' },
   },
+  -- optional, you can also install and use `yq` instead.
   build = 'make',
   dependencies = { 'nvim-lua/plenary.nvim', 'MunifTanjim/nui.nvim' },
   opts = {},

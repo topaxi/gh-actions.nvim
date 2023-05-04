@@ -1,7 +1,6 @@
 local curl = require('plenary.curl')
 local job = require('plenary.job')
 local utils = require('gh-actions.utils')
-local rust = require('gh-actions.rust')
 
 local M = {}
 
@@ -38,7 +37,7 @@ local function read_gh_hosts_token(config_file)
   config_file = vim.fn.expand(config_file or '$HOME/.config/gh/hosts.yml')
 
   local gh_hosts_yaml = utils.read_file(config_file) or ''
-  local gh_hosts_config = rust.parse_yaml(gh_hosts_yaml)
+  local gh_hosts_config = utils.parse_yaml(gh_hosts_yaml)
   local token = gh_hosts_config and gh_hosts_config['github.com'].oauth_token
 
   return token
