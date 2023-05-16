@@ -217,6 +217,7 @@ function M.open()
       local i = 0
       local input_values = vim.empty_dict()
 
+      -- TODO: Would be great to be able to cycle back to previous inputs
       local function ask_next()
         i = i + 1
 
