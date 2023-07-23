@@ -10,7 +10,7 @@ local M = {}
 function M.check()
   start('Checking ability to parse yaml files')
 
-  local has_rust_module, _rust = pcall(require, 'gh-actions.rust')
+  local has_rust_module = pcall(require, 'gh-actions.rust')
 
   if has_rust_module then
     ok('Found rust module')
