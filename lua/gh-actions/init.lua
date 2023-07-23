@@ -95,8 +95,8 @@ function M.update_workflow_configs(state)
 
   for _, workflow in ipairs(state.workflows) do
     if
-        not state.workflow_configs[workflow.id]
-        or (n - state.workflow_configs[workflow.id].last_read)
+      not state.workflow_configs[workflow.id]
+      or (n - state.workflow_configs[workflow.id].last_read)
         > WORKFLOW_CONFIG_CACHE_TTL_S
     then
       state.workflow_configs[workflow.id] = {
@@ -156,18 +156,24 @@ local function menu(opts)
   })
 end
 
+local function open_workflow(workflow)
+  if not workflow then
+    return
+  end
+
+  -- TODO instead of using cwd we should traverse the directory tree up
+  --      until we see the .github directory.
+  local absolute_path = vim.loop.cwd() .. '/' .. workflow.path
+
+  vim.cmd('drop ' .. absolute_path)
+end
+
 function M.open()
   ui.open()
   ui.split:map('n', 'q', M.close, { noremap = true })
 
   ui.split:map('n', 'gw', function()
-    local workflow = ui.get_workflow()
-
-    if workflow then
-      utils.open(workflow.html_url)
-
-      return
-    end
+    open_workflow(ui.get_workflow())
   end, { noremap = true })
 
   ui.split:map('n', 'gr', function()
@@ -175,8 +181,6 @@ function M.open()
 
     if workflow_run then
       utils.open(workflow_run.html_url)
-
-      return
     end
   end, { noremap = true })
 
@@ -185,8 +189,6 @@ function M.open()
 
     if workflow_job then
       utils.open(workflow_job.html_url)
-
-      return
     end
   end, { noremap = true })
 
