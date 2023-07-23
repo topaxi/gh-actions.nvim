@@ -72,7 +72,7 @@ The following keybindings are provided by the plugin:
 
 ### Options
 
-The default options (as defined in [lua/config.lua](./blob/main/lua/gh-actions/config.lua)
+The default options (as defined in [lua/config.lua](./blob/main/lua/gh-actions/config.lua))
 
 ```lua
 {
