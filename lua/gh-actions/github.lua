@@ -31,23 +31,35 @@ function M.get_current_repository()
   return strip_git_suffix(origin_url):match('github.com[:/](.+)$')
 end
 
----@param config_file? string
+---@param cmd? string
 ---@return string|nil
-local function read_gh_hosts_token(config_file)
-  config_file = vim.fn.expand(config_file or '$HOME/.config/gh/hosts.yml')
+local function get_token_from_gh_cli(cmd)
+  local has_gh_installed = vim.fn.executable('gh') == 1
+  if not has_gh_installed and not cmd then
+    return nil
+  end
 
-  local gh_hosts_yaml = utils.read_file(config_file) or ''
-  local gh_hosts_config = utils.parse_yaml(gh_hosts_yaml)
-  local token = gh_hosts_config and gh_hosts_config['github.com'].oauth_token
+  local res
+  if cmd then
+    res = vim.fn.system(cmd)
+  else
+    res = vim.fn.system('gh auth token')
+  end
+
+  local token = string.gsub(res, '\n', '')
+
+  if token == '' then
+    return nil
+  end
 
   return token
 end
 
----@param config_file? string
+---@param cmd? string
 ---@return string
-function M.get_github_token(config_file)
+function M.get_github_token(cmd)
   return vim.env.GITHUB_TOKEN
-    or read_gh_hosts_token(config_file)
+    or get_token_from_gh_cli(cmd)
     -- TODO: We could also ask for the token here via nui
     or assert(nil, 'No GITHUB_TOKEN found in env and no gh cli config found')
 end

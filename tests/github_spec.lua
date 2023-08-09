@@ -6,7 +6,7 @@ describe("get_github_token", function()
   end)
 
   it("should read from gh/hosts.yml", function()
-    local token = gh.get_github_token("tests/fixtures/gh_hosts.yml")
+    local token = gh.get_github_token("echo etopaxitesttoken")
 
     assert.are.same("topaxitesttoken", token)
   end)
@@ -14,7 +14,7 @@ describe("get_github_token", function()
   it("should read from GITHUB_TOKEN", function()
     vim.env.GITHUB_TOKEN = "envtoken"
 
-    local token = gh.get_github_token("tests/fixtures/gh_hosts.yml")
+    local token = gh.get_github_token("echo etopaxitesttoken")
 
     assert.are.same("envtoken", token)
   end)
