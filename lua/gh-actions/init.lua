@@ -82,7 +82,7 @@ end
 
 local function now()
   local date = os.date('!*t')
-  ---@cast date osdate
+  ---@cast date osdateparam
   return os.time(date)
 end
 
@@ -95,8 +95,8 @@ function M.update_workflow_configs(state)
 
   for _, workflow in ipairs(state.workflows) do
     if
-        not state.workflow_configs[workflow.id]
-        or (n - state.workflow_configs[workflow.id].last_read)
+      not state.workflow_configs[workflow.id]
+      or (n - state.workflow_configs[workflow.id].last_read)
         > WORKFLOW_CONFIG_CACHE_TTL_S
     then
       state.workflow_configs[workflow.id] = {

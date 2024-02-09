@@ -7,8 +7,8 @@ local utils = require('gh-actions.utils')
 ---@class GhActionsRenderLocation
 ---@field value any
 ---@field kind string
----@field from integer
----@field to integer
+---@field from? integer
+---@field to? integer
 
 ---@class GhActionsRender:Buffer
 ---@field store { get_state: fun(): GhActionsState }

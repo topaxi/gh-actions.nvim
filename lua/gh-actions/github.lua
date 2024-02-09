@@ -46,7 +46,7 @@ local function get_token_from_gh_cli(cmd)
     res = vim.fn.system('gh auth token')
   end
 
-  local token = string.gsub(res, '\n', '')
+  local token = string.gsub(res or '', '\n', '')
 
   if token == '' then
     return nil
@@ -97,7 +97,7 @@ end
 ---@field workflows GhWorkflow[]
 
 ---@param repo string
----@param opts? table
+---@param opts? { callback?: fun(workflows: GhWorkflow[]): any }
 function M.get_workflows(repo, opts)
   opts = opts or {}
 
@@ -183,7 +183,7 @@ end
 ---@param repo string
 ---@param workflow_id integer
 ---@param per_page? integer
----@param opts? table
+---@param opts? { callback?: fun(workflow_runs: GhWorkflowRun[]): any }
 function M.get_workflow_runs(repo, workflow_id, per_page, opts)
   opts = opts or {}
 
@@ -240,7 +240,7 @@ end
 ---@param repo string
 ---@param workflow_run_id integer
 ---@param per_page? integer
----@param opts? { callback?: fun(workflow_runs: GhWorkflowRun[]): any }
+---@param opts? { callback?: fun(workflow_runs: GhWorkflowRunJob[]): any }
 function M.get_workflow_run_jobs(repo, workflow_run_id, per_page, opts)
   opts = opts or {}
 
@@ -267,7 +267,6 @@ function M.get_workflow_run_jobs(repo, workflow_run_id, per_page, opts)
   )
 end
 
----TODO lua-yaml is not able to fully parse most yaml files..
 ---@param path string
 ---@return table
 function M.get_workflow_config(path)

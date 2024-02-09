@@ -4,6 +4,7 @@ local store = require('gh-actions.store')
 local Render = require('gh-actions.ui.render')
 
 local M = {
+  ---@type NuiSplit
   split = nil,
   renderer = nil,
 }
