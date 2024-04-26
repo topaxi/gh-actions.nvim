@@ -36,13 +36,14 @@ end
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
 local function fetch_data()
-  local repo = gh.get_current_repository()
+  local server, repo = gh.get_current_repository()
 
   store.update_state(function(state)
     state.repo = repo
+    state.server = server
   end)
 
-  gh.get_workflows(repo, {
+  gh.get_workflows(server, repo, {
     callback = function(workflows)
       store.update_state(function(state)
         state.workflows = workflows
@@ -50,7 +51,7 @@ local function fetch_data()
     end,
   })
 
-  gh.get_repository_workflow_runs(repo, 100, {
+  gh.get_repository_workflow_runs(server, repo, 100, {
     callback = function(workflow_runs)
       local old_workflow_runs = store.get_state().workflow_runs
 
@@ -68,7 +69,7 @@ local function fetch_data()
       )
 
       for _, run in ipairs(running_workflows) do
-        gh.get_workflow_run_jobs(repo, run.id, 20, {
+        gh.get_workflow_run_jobs(server, repo, run.id, 20, {
           callback = function(jobs)
             store.update_state(function(state)
               state.workflow_jobs[run.id] = jobs
@@ -195,6 +196,7 @@ function M.open()
     local workflow = ui.get_workflow()
 
     if workflow then
+      local server = store.get_state().server
       local repo = store.get_state().repo
 
       -- TODO should we get current ref instead or show an input with the
@@ -224,11 +226,11 @@ function M.open()
         if #questions > 0 and i <= #questions then
           questions[i]:mount()
         else
-          gh.dispatch_workflow(repo, workflow.id, default_branch, {
+          gh.dispatch_workflow(server, repo, workflow.id, default_branch, {
             body = { inputs = input_values or {} },
             callback = function(_res)
               utils.delay(2000, function()
-                gh.get_workflow_runs(repo, workflow.id, 5, {
+                gh.get_workflow_runs(server, repo, workflow.id, 5, {
                   callback = function(workflow_runs)
                     store.update_state(function(state)
                       state.workflow_runs = utils.uniq(function(run)

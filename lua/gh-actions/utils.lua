@@ -57,7 +57,7 @@ function M.parse_yaml(yamlstr)
   if has_rust_module then
     return rust.parse_yaml(yamlstr or '')
   else
-    return vim.json.decode(vim.fn.system('yq', yamlstr) or '')
+    return vim.json.decode(vim.fn.system({'yq', '-o', 'json'}, yamlstr) or '')
   end
 end
 
