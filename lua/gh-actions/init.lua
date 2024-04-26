@@ -4,7 +4,7 @@ local event = require('nui.utils.autocmd').event
 local Config = require('gh-actions.config')
 local store = require('gh-actions.store')
 local git = require('gh-actions.git')
-local gh = require('gh-actions.github')
+local Github = require('gh-actions.github')
 local ui = require('gh-actions.ui')
 local utils = require('gh-actions.utils')
 
@@ -35,15 +35,11 @@ end
 --     "toplevel" workflow states
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
-local function fetch_data()
-  local server, repo = gh.get_current_repository()
 
-  store.update_state(function(state)
-    state.repo = repo
-    state.server = server
-  end)
-
-  gh.get_workflows(server, repo, {
+---@param gh Github
+---@param repo string
+local function fetch_data(gh, repo)
+  gh:get_workflows(repo, {
     callback = function(workflows)
       store.update_state(function(state)
         state.workflows = workflows
@@ -51,7 +47,7 @@ local function fetch_data()
     end,
   })
 
-  gh.get_repository_workflow_runs(server, repo, 100, {
+  gh:get_repository_workflow_runs(repo, 100, {
     callback = function(workflow_runs)
       local old_workflow_runs = store.get_state().workflow_runs
 
@@ -60,16 +56,19 @@ local function fetch_data()
       end)
 
       local running_workflows = utils.uniq(
+        utils.list_filter(
+          utils.list_concat(old_workflow_runs, workflow_runs),
+          function(run)
+            return run.status ~= 'completed' and run.status ~= 'skipped'
+          end
+        ),
         function(run)
           return run.id
-        end,
-        vim.tbl_filter(function(run)
-          return run.status ~= 'completed' and run.status ~= 'skipped'
-        end, { unpack(old_workflow_runs), unpack(workflow_runs) })
+        end
       )
 
       for _, run in ipairs(running_workflows) do
-        gh.get_workflow_run_jobs(server, repo, run.id, 20, {
+        gh:get_workflow_run_jobs(repo, run.id, 20, {
           callback = function(jobs)
             store.update_state(function(state)
               state.workflow_jobs[run.id] = jobs
@@ -100,7 +99,7 @@ function M.update_workflow_configs(state)
     then
       state.workflow_configs[workflow.id] = {
         last_read = n,
-        config = gh.get_workflow_config(workflow.path),
+        config = Github.get_workflow_config(workflow.path),
       }
     end
   end
@@ -155,6 +154,18 @@ local function menu(opts)
   })
 end
 
+local function update()
+  local repo, host = Github.get_current_repository()
+  local gh = Github.new { host = host }
+
+  store.update_state(function(state)
+    state.repo = repo
+    state.host = host
+  end)
+
+  fetch_data(gh, repo)
+end
+
 function M.open()
   ui.open()
   ui.split:map('n', 'q', M.close, { noremap = true })
@@ -194,8 +205,9 @@ function M.open()
     local workflow = ui.get_workflow()
 
     if workflow then
-      local server = store.get_state().server
+      local host = store.get_state().host
       local repo = store.get_state().repo
+      local gh = Github.new(host)
 
       -- TODO should we get current ref instead or show an input with the
       --      default branch or current ref preselected?
@@ -224,19 +236,19 @@ function M.open()
         if #questions > 0 and i <= #questions then
           questions[i]:mount()
         else
-          gh.dispatch_workflow(server, repo, workflow.id, default_branch, {
+          gh:dispatch_workflow(repo, workflow.id, default_branch, {
             body = { inputs = input_values or {} },
             callback = function(_res)
               utils.delay(2000, function()
-                gh.get_workflow_runs(server, repo, workflow.id, 5, {
+                gh:get_workflow_runs(repo, workflow.id, 5, {
                   callback = function(workflow_runs)
                     store.update_state(function(state)
-                      state.workflow_runs = utils.uniq(function(run)
-                        return run.id
-                      end, {
-                        unpack(workflow_runs),
-                        unpack(state.workflow_runs),
-                      })
+                      state.workflow_runs = utils.uniq(
+                        utils.list_concat(workflow_runs, state.workflow_runs),
+                        function(run)
+                          return run.id
+                        end
+                      )
                     end)
                   end,
                 })
@@ -305,7 +317,7 @@ function M.open()
   M.timer:start(
     0,
     Config.options.refresh_interval * 1000,
-    vim.schedule_wrap(fetch_data)
+    vim.schedule_wrap(update)
   )
 
   --TODO: This might get called after rendering..

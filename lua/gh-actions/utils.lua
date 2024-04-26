@@ -57,15 +57,44 @@ function M.parse_yaml(yamlstr)
   if has_rust_module then
     return rust.parse_yaml(yamlstr or '')
   else
-    return vim.json.decode(vim.fn.system({'yq', '-o', 'json'}, yamlstr) or '')
+    return vim.json.decode(vim.fn.system({ 'yq', '-o', 'json' }, yamlstr) or '')
   end
 end
 
+---@generic T
+---@param tbl T[]
+---@param fn fun(value: T): boolean
+---@return T[]
+function M.list_filter(tbl, fn)
+  local filtered = {}
+
+  for _, v in ipairs(tbl) do
+    if fn(v) then
+      table.insert(filtered, v)
+    end
+  end
+
+  return filtered
+end
+
+---@generic T
+---@param ... T[]
+---@return T[]
+function M.list_concat(...)
+  local tbl = {}
+  for _, arg in ipairs { ... } do
+    for _, value in ipairs(arg) do
+      table.insert(tbl, value)
+    end
+  end
+  return tbl
+end
+
 ---@generic V
+---@param tbl V[]
 ---@param fn fun(arg1: V): any
----@param tbl table<any, V>
----@return table<integer, V>
-function M.uniq(fn, tbl)
+---@return V[]
+function M.uniq(tbl, fn)
   local set = {}
   local unique_table = {}
 
@@ -95,10 +124,11 @@ function M.delay(ms, fn)
 end
 
 ---@generic T
----@param fn fun(value: T, key: number): number
----@param tbl table<number, T>
----@return table<number, T[]>
-function M.group_by(fn, tbl)
+---@generic K
+---@param tbl T[]
+---@param fn fun(value: T, key: number): K
+---@return table<K, T[]>
+function M.group_by(tbl, fn)
   local m = {}
 
   for k, v in ipairs(tbl) do

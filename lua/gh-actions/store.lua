@@ -5,6 +5,7 @@ local utils = require('gh-actions.utils')
 ---@field config table
 
 ---@class GhActionsState
+---@field host string
 ---@field repo string
 ---@field workflows GhWorkflow[]
 ---@field workflow_runs GhWorkflowRun[]
@@ -13,6 +14,7 @@ local utils = require('gh-actions.utils')
 
 ---@type GhActionsState
 local initialState = {
+  host = '',
   repo = '',
   workflows = {},
   workflow_runs = {},

@@ -96,9 +96,12 @@ function GhActionsRender:workflows(state)
   local workflows = state.workflows
   local workflow_runs = state.workflow_runs
 
-  local workflow_runs_by_workflow_id = utils.group_by(function(workflow_run)
-    return workflow_run.workflow_id
-  end, workflow_runs)
+  local workflow_runs_by_workflow_id = utils.group_by(
+    workflow_runs,
+    function(workflow_run)
+      return workflow_run.workflow_id
+    end
+  )
 
   for _, workflow in ipairs(workflows) do
     local runs = workflow_runs_by_workflow_id[workflow.id] or {}
