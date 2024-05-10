@@ -82,9 +82,7 @@ local function fetch_data()
 end
 
 local function now()
-  local date = os.date('!*t')
-  ---@cast date osdateparam
-  return os.time(date)
+  return os.time()
 end
 
 local WORKFLOW_CONFIG_CACHE_TTL_S = 10
