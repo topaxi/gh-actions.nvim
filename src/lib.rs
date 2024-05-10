@@ -2,7 +2,7 @@ use mlua::prelude::{Lua, LuaError, LuaResult, LuaTable};
 use mlua::LuaSerdeExt;
 use serde_yaml::Value as YamlValue;
 
-fn yaml_to_lua<'lua>(lua: &'lua Lua, yamlstr: String) -> LuaResult<mlua::Value<'lua>> {
+fn yaml_to_lua(lua: &Lua, yamlstr: String) -> LuaResult<mlua::Value<'_>> {
     let yaml: YamlValue = serde_yaml::from_str(&yamlstr).map_err(LuaError::external)?;
 
     lua.to_value(&yaml)
