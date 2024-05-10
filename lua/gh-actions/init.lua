@@ -168,6 +168,9 @@ end
 
 function M.open()
   ui.open()
+
+  -- TODO: The ui should define actions and their keybinds and then emit events
+  --       either through an event emitter or via callbacks.
   ui.split:map('n', 'q', M.close, { noremap = true })
 
   ui.split:map('n', 'gw', function()
@@ -207,6 +210,8 @@ function M.open()
     if workflow then
       local host = store.get_state().host
       local repo = store.get_state().repo
+
+      -- TODO: Figure out how to reuse the existing instance
       local gh = Github.new(host)
 
       -- TODO should we get current ref instead or show an input with the
