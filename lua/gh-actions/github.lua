@@ -28,7 +28,7 @@ function M.get_current_repository()
 
   local origin_url = table.concat(origin_url_job:result(), '')
 
-  return strip_git_suffix(origin_url):match('([^@/:]+)[:/](.+)$')
+  return strip_git_suffix(origin_url):match('([^@/:]+)[:/]([^/]+/[^/]+)$')
 end
 
 ---@param cmd? string
