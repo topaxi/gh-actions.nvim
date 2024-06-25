@@ -44,9 +44,9 @@ local function get_token_from_gh_cli(cmd, server)
   if cmd then
     res = vim.fn.system(cmd)
   else
-    local gh_enterprise_flag = ""
-    if server ~= nil and server ~= "" then
-      gh_enterprise_flag = " --hostname " .. vim.fn.shellescape(server)
+    local gh_enterprise_flag = ''
+    if server ~= nil and server ~= '' then
+      gh_enterprise_flag = ' --hostname ' .. vim.fn.shellescape(server)
     end
     res = vim.fn.system('gh auth token' .. gh_enterprise_flag)
   end
@@ -78,7 +78,7 @@ function M.fetch(server, path, opts)
   opts.callback = opts.callback and vim.schedule_wrap(opts.callback)
 
   local url = string.format('https://api.github.com%s', path)
-  if server ~= "github.com" then
+  if server ~= 'github.com' then
     url = string.format('https://%s/api/v3%s', server, path)
   end
 
@@ -86,7 +86,10 @@ function M.fetch(server, path, opts)
     url,
     vim.tbl_deep_extend('force', opts, {
       headers = {
-        Authorization = string.format('Bearer %s', M.get_github_token(nil, server)),
+        Authorization = string.format(
+          'Bearer %s',
+          M.get_github_token(nil, server)
+        ),
       },
     })
   )
