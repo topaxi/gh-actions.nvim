@@ -1,7 +1,3 @@
-local curl = require('plenary.curl')
-local job = require('plenary.job')
-local utils = require('gh-actions.utils')
-
 local M = {}
 
 ---@param str string
@@ -15,6 +11,7 @@ local function strip_git_suffix(str)
 end
 
 function M.get_current_repository()
+  local job = require('plenary.job')
   local origin_url_job = job:new {
     command = 'git',
     args = {
@@ -74,6 +71,10 @@ end
 ---@param path string
 ---@param opts? table
 function M.fetch(server, path, opts)
+  vim.validate('server', server, 'string')
+  vim.validate('path', path, 'string')
+  vim.validate('opts', opts, 'table', true)
+
   opts = opts or {}
   opts.callback = opts.callback and vim.schedule_wrap(opts.callback)
 
@@ -81,6 +82,8 @@ function M.fetch(server, path, opts)
   if server ~= 'github.com' then
     url = string.format('https://%s/api/v3%s', server, path)
   end
+
+  local curl = require('plenary.curl')
 
   return curl[opts.method or 'get'](
     url,
@@ -297,6 +300,7 @@ end
 function M.get_workflow_config(path)
   path = vim.fn.expand(path)
 
+  local utils = require('gh-actions.utils')
   local workflow_yaml = utils.read_file(path) or ''
   local config = {
     on = {

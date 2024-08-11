@@ -1,28 +1,31 @@
-local job = require('plenary.job')
-
 local M = {}
 
+---@param job Job
+local function create_job(job)
+  return require('plenary.job').job:new(job)
+end
+
 function M.get_current_branch()
-  local gitJob = job:new {
+  local job = create_job {
     command = 'git',
     args = { 'branch', '--show-current' },
   }
 
-  gitJob:sync()
+  job:sync()
 
-  return table.concat(gitJob:result(), '')
+  return table.concat(job:result(), '')
 end
 
 function M.get_default_branch()
-  local gitJob = job:new {
+  local job = create_job {
     command = 'git',
     args = { 'remote', 'show', 'origin' },
   }
 
-  gitJob:sync()
+  job:sync()
 
   -- luacheck: ignore
-  for match in table.concat(gitJob:result(), ''):gmatch('HEAD branch: (%a+)') do
+  for match in table.concat(job:result(), ''):gmatch('HEAD branch: (%a+)') do
     return match
   end
 

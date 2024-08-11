@@ -1,13 +1,3 @@
-local Input = require('nui.input')
-local Menu = require('nui.menu')
-local event = require('nui.utils.autocmd').event
-local Config = require('gh-actions.config')
-local store = require('gh-actions.store')
-local git = require('gh-actions.git')
-local gh = require('gh-actions.github')
-local ui = require('gh-actions.ui')
-local utils = require('gh-actions.utils')
-
 local M = {
   setup_called = false,
   init_root = '',
@@ -23,8 +13,8 @@ function M.setup(opts)
 
   M.setup_called = true
 
-  Config.setup(opts)
-  ui.setup()
+  require('gh-actions.config').setup(opts)
+  require('gh-actions.ui').setup()
 
   vim.api.nvim_create_user_command('GhActions', M.open, {})
 end
@@ -36,6 +26,8 @@ end
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
 local function fetch_data()
+  local gh = require('gh-actions.github')
+  local store = require('gh-actions.store')
   local server, repo = gh.get_current_repository()
 
   store.update_state(function(state)
@@ -53,6 +45,7 @@ local function fetch_data()
 
   gh.get_repository_workflow_runs(server, repo, 100, {
     callback = function(workflow_runs)
+      local utils = require('gh-actions.utils')
       local old_workflow_runs = store.get_state().workflow_runs
 
       store.update_state(function(state)
@@ -90,6 +83,7 @@ local WORKFLOW_CONFIG_CACHE_TTL_S = 10
 ---TODO We should run this after fetching the workflows instead of within the state update event
 ---@param state GhActionsState
 function M.update_workflow_configs(state)
+  local gh = require('gh-actions.github')
   local n = now()
 
   for _, workflow in ipairs(state.workflows) do
@@ -108,6 +102,8 @@ end
 
 ---@param opts { prompt: string, title: string, default_value: string, on_submit: fun(value: string) }
 local function text(opts)
+  local Input = require('nui.input')
+
   return Input({
     relative = 'editor',
     position = '50%',
@@ -127,6 +123,7 @@ end
 
 ---@param opts { prompt: string, title: string, options: string[], on_submit: fun(value: { text: string }) }
 local function menu(opts)
+  local Menu = require('nui.menu')
   local lines = { Menu.separator(opts.prompt) }
 
   for _, option in ipairs(opts.options) do
@@ -156,6 +153,10 @@ local function menu(opts)
 end
 
 function M.open()
+  local ui = require('gh-actions.ui')
+  local store = require('gh-actions.store')
+  local utils = require('gh-actions.utils')
+
   ui.open()
   ui.split:map('n', 'q', M.close, { noremap = true })
 
@@ -191,6 +192,7 @@ function M.open()
 
   -- TODO Move this into its own module, ui?
   ui.split:map('n', 'd', function()
+    local gh = require('gh-actions.github')
     local workflow = ui.get_workflow()
 
     if workflow then
@@ -199,9 +201,9 @@ function M.open()
 
       -- TODO should we get current ref instead or show an input with the
       --      default branch or current ref preselected?
-      local default_branch = git.get_default_branch()
-
-      local workflow_config = utils.read_yaml_file(workflow.path)
+      local default_branch = require('gh-actions.git').get_default_branch()
+      local workflow_config =
+        require('gh-actions.yaml').read_yaml_file(workflow.path)
 
       if not workflow_config or not workflow_config.on.workflow_dispatch then
         return
@@ -213,6 +215,7 @@ function M.open()
         inputs = workflow_config.on.workflow_dispatch.inputs
       end
 
+      local event = require('nui.utils.autocmd').event
       local questions = {}
       local i = 0
       local input_values = vim.empty_dict()
@@ -304,7 +307,7 @@ function M.open()
   M.timer = vim.loop.new_timer()
   M.timer:start(
     0,
-    Config.options.refresh_interval * 1000,
+    require('gh-actions.config').options.refresh_interval * 1000,
     vim.schedule_wrap(fetch_data)
   )
 
@@ -313,6 +316,9 @@ function M.open()
 end
 
 function M.close()
+  local ui = require('gh-actions.ui')
+  local store = require('gh-actions.store')
+
   ui.close()
   M.timer:stop()
   M.timer:close()
