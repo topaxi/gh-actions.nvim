@@ -71,9 +71,17 @@ end
 ---@param path string
 ---@param opts? table
 function M.fetch(server, path, opts)
-  vim.validate('server', server, 'string')
-  vim.validate('path', path, 'string')
-  vim.validate('opts', opts, 'table', true)
+  if vim.fn.has('nvim-0.11') == 1 then
+    vim.validate('server', server, 'string')
+    vim.validate('path', path, 'string')
+    vim.validate('opts', opts, 'table', true)
+  else
+    vim.validate {
+      server = { server, 'string' },
+      path = { path, 'string' },
+      opts = { opts, 'table', true },
+    }
+  end
 
   opts = opts or {}
   opts.callback = opts.callback and vim.schedule_wrap(opts.callback)
