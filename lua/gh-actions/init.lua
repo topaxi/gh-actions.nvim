@@ -3,6 +3,7 @@ local M = {
   init_root = '',
   ---@type uv_timer_t|nil
   timer = nil,
+  timers = 0,
 }
 
 ---@param opts? GhActionsConfig
@@ -72,6 +73,29 @@ local function fetch_data()
       end
     end,
   })
+end
+
+function M.start_polling()
+  M.timers = M.timers + 1
+
+  if not M.timer then
+    M.timer = vim.loop.new_timer()
+    M.timer:start(
+      0,
+      require('gh-actions.config').options.refresh_interval * 1000,
+      vim.schedule_wrap(fetch_data)
+    )
+  end
+end
+
+function M.stop_polling()
+  M.timers = M.timers - 1
+
+  if M.timers == 0 then
+    M.timer:stop()
+    M.timer:close()
+    M.timer = nil
+  end
 end
 
 local function now()
@@ -304,12 +328,7 @@ function M.open()
     end
   end, { noremap = true })
 
-  M.timer = vim.loop.new_timer()
-  M.timer:start(
-    0,
-    require('gh-actions.config').options.refresh_interval * 1000,
-    vim.schedule_wrap(fetch_data)
-  )
+  M.start_polling()
 
   --TODO: This might get called after rendering..
   store.on_update(M.update_workflow_configs)
@@ -320,9 +339,7 @@ function M.close()
   local store = require('gh-actions.store')
 
   ui.close()
-  M.timer:stop()
-  M.timer:close()
-  M.timer = nil
+  M.stop_polling()
   store.off_update(M.update_workflow_configs)
 end
 

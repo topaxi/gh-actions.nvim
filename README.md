@@ -131,6 +131,31 @@ The default options (as defined in [lua/config.lua](./blob/main/lua/gh-actions/c
 
 ```
 
+## lualine integration
+
+```lua
+require('lualine').setup({
+  sections = {
+    lualine_a = {
+      { 'gh-actions' },
+    },
+  }
+})
+```
+
+or with options:
+
+```lua
+require('lualine').setup({
+  sections = {
+    lualine_a = {
+      -- with default options
+      { 'gh-actions', icon = ' ' },
+    },
+  }
+})
+```
+
 ## Credits
 
 - [folke/lazy.nvim](https://github.com/folke/lazy.nvim) for the rendering approach
