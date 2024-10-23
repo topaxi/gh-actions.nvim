@@ -6,6 +6,7 @@ local utils = require('gh-actions.utils')
 
 ---@class GhActionsState
 ---@field repo string
+---@field server string
 ---@field workflows GhWorkflow[]
 ---@field workflow_runs GhWorkflowRun[]
 ---@field workflow_jobs table<integer, GhWorkflowRunJob[]>
@@ -14,6 +15,7 @@ local utils = require('gh-actions.utils')
 ---@type GhActionsState
 local initialState = {
   repo = '',
+  server = '',
   workflows = {},
   workflow_runs = {},
   workflow_jobs = {},
