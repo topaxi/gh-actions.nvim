@@ -1,6 +1,6 @@
 local M = {}
 
-function handle_gh_actions_command(a)
+local function handle_gh_actions_command(a)
   local gha = require('gh-actions')
 
   local action = a.fargs[1] or 'toggle'
@@ -20,7 +20,7 @@ function handle_gh_actions_command(a)
   end
 end
 
-function completion_customlist()
+local function completion_customlist()
   return {
     'open',
     'close',
