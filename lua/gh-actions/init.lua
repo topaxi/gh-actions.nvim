@@ -16,8 +16,7 @@ function M.setup(opts)
 
   require('gh-actions.config').setup(opts)
   require('gh-actions.ui').setup()
-
-  vim.api.nvim_create_user_command('GhActions', M.open, {})
+  require('gh-actions.command').setup()
 end
 
 --TODO Only periodically fetch all workflows

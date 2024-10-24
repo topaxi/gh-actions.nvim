@@ -54,7 +54,9 @@ Alternatively, define a `GITHUB_TOKEN` variable in your environment.
 
 ### Commands
 
-- `:GhActions` opens the `gh-actions` split
+- `:GhActions` or `:GhActions toggle` toggles the `gh-actions` split
+- `:GhActions open` opens the `gh-actions` split
+- `:GhActions close` closes the `gh-actions` split
 
 ### Keybindings
 
