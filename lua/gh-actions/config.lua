@@ -17,6 +17,7 @@ local defaultConfig = {
       startup_failure = 'X',
       cancelled = '⊘',
       skipped = '◌',
+      action_required = '⚠',
     },
     ---@class GhActionsIconsStatus
     status = {
