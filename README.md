@@ -152,7 +152,7 @@ require('lualine').setup({
   sections = {
     lualine_a = {
       -- with default options
-      { 'gh-actions', icon = ' ' },
+      { 'gh-actions', icon = '' },
     },
   }
 })

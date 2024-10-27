@@ -14,7 +14,7 @@ local component = require('lualine.component'):extend()
 
 ---@class GhActionsComponent
 local default_options = {
-  icon = ' ',
+  icon = '',
 }
 
 ---@override
