@@ -48,8 +48,7 @@ function component:update_status()
     return ''
   end
 
-  return self.options.icon
-    .. icons().get_workflow_run_icon(latest_workflow_run)
+  return icons().get_workflow_run_icon(latest_workflow_run)
     .. ' '
     .. latest_workflow_run.name
 end
