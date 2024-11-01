@@ -19,6 +19,18 @@ function M.setup(opts)
   require('gh-actions.command').setup()
 end
 
+local function is_host_allowed(host)
+  local config = require('gh-actions.config')
+
+  for _, allowed_host in ipairs(config.options.allowed_hosts) do
+    if host == allowed_host then
+      return true
+    end
+  end
+
+  return false
+end
+
 --TODO Only periodically fetch all workflows
 --     then fetch runs for a single workflow (tabs/expandable)
 --     Maybe periodically fetch all workflow runs to update
@@ -34,6 +46,10 @@ local function fetch_data()
     state.repo = repo
     state.server = server
   end)
+
+  if not is_host_allowed(server) then
+    return
+  end
 
   gh.get_workflows(server, repo, {
     callback = function(workflows)

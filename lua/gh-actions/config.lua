@@ -7,6 +7,9 @@ local defaultConfig = {
   refresh_interval = 10,
   --- How much workflow runs and jobs should be indented
   indent = 2,
+  --- Allowed hosts to fetch data from, github.com is always allowed
+  --- @type string[]
+  allowed_hosts = {},
   ---@class GhActionsIcons
   icons = {
     workflow_dispatch = '⚡️',
@@ -73,6 +76,8 @@ function M.setup(opts)
   opts = opts or {}
 
   M.options = vim.tbl_deep_extend('force', defaultConfig, opts)
+  M.options.allowed_hosts = M.options.allowed_hosts or {}
+  table.insert(M.options.allowed_hosts, 'github.com')
 end
 
 return M

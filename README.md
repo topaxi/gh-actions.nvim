@@ -81,6 +81,9 @@ The default options (as defined in [lua/config.lua](./blob/main/lua/gh-actions/c
   refresh_interval = 10,
   --- How much workflow runs and jobs should be indented
   indent = 2,
+  --- Allowed hosts to fetch data from, github.com is always allowed
+  --- @type string[]
+  allowed_hosts = {},
   icons = {
     workflow_dispatch = '⚡️',
     conclusion = {
