@@ -17,7 +17,13 @@ function M.parse_yaml(yamlstr)
   if has_rust_module then
     return rust.parse_yaml(yamlstr or '')
   else
-    return vim.json.decode(vim.fn.system({ 'yq', '-j' }, yamlstr))
+    local result = vim
+      .system({ 'yq', '-j' }, {
+        stdin = yamlstr,
+        stderr = false,
+      })
+      :wait()
+    return vim.json.decode(result.stdout)
   end
 end
 
