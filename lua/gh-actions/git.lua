@@ -2,7 +2,7 @@ local M = {}
 
 ---@param job Job
 local function create_job(job)
-  return require('plenary.job').job:new(job)
+  return require('plenary.job'):new(job)
 end
 
 function M.get_current_branch()
