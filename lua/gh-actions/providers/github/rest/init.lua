@@ -18,7 +18,7 @@ end
 local GithubRestProvider = Provider:extend()
 
 function GithubRestProvider.detect()
-  local gh = require('gh-actions.github')
+  local gh = require('gh-actions.providers.github.rest._api')
   local server, repo = gh().get_current_repository()
 
   if not is_host_allowed(server) then
@@ -29,7 +29,7 @@ function GithubRestProvider.detect()
 end
 
 function GithubRestProvider:init(_opts)
-  local gh = require('gh-actions.github')
+  local gh = require('gh-actions.providers.github.rest._api')
   local server, repo = gh.get_current_repository()
 
   self.server = server
@@ -48,7 +48,7 @@ end
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
 function GithubRestProvider:fetch()
-  local gh = require('gh-actions.github')
+  local gh = require('gh-actions.providers.github.rest._api')
 
   gh.get_workflows(self.server, self.repo, {
     callback = function(workflows)

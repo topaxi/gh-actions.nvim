@@ -18,9 +18,9 @@ function M.setup(opts)
   require('gh-actions.ui').setup()
   require('gh-actions.command').setup()
 
-  local GithubRestProvider = require('gh-actions.providers.github.rest')
+  local GithubProvider = require('gh-actions.providers').github
 
-  M.pipeline = GithubRestProvider:new(
+  M.pipeline = GithubProvider:new(
     require('gh-actions.config').options,
     require('gh-actions.store'),
     {}
@@ -44,7 +44,7 @@ local WORKFLOW_CONFIG_CACHE_TTL_S = 10
 ---TODO We should run this after fetching the workflows instead of within the state update event
 ---@param state GhActionsState
 function M.update_workflow_configs(state)
-  local gh = require('gh-actions.github')
+  local gh = require('gh-actions.providers.github.rest._api')
   local n = now()
 
   for _, workflow in ipairs(state.workflows) do
@@ -153,7 +153,7 @@ function M.open()
 
   -- TODO Move this into its own module, ui?
   ui.split:map('n', 'd', function()
-    local gh = require('gh-actions.github')
+    local gh = require('gh-actions.providers.github.rest._api')
     local workflow = ui.get_workflow()
 
     if workflow then

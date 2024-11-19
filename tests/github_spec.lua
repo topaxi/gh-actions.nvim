@@ -1,4 +1,4 @@
-local gh = require('gh-actions.github')
+local gh = require('gh-actions.providers.github.rest._api')
 
 describe('get_github_token', function()
   before_each(function()
