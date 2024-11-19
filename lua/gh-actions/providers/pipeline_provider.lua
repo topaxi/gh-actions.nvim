@@ -54,7 +54,7 @@ function Provider:new(config, store, opts)
   instance.config = config
   instance.store = store
   instance.listener_count = 0
-  instance:init(opts)
+  instance:init(opts or {})
   return instance
 end
 

@@ -1,5 +1,9 @@
 local Provider = require('gh-actions.providers.pipeline_provider')
 
+local function gh()
+  return require('gh-actions.providers.github.rest._api')
+end
+
 local function is_host_allowed(host)
   local config = require('gh-actions.config')
 
@@ -12,13 +16,19 @@ local function is_host_allowed(host)
   return false
 end
 
+---@class GithubRestProviderOptions
+---@field refresh_interval? number
+local defaultOptions = {
+  refresh_interval = 10,
+}
+
 ---@class GithubRestProvider: Provider
+---@field protected opts GithubRestProviderOptions
 ---@field private server string
 ---@field private repo string
 local GithubRestProvider = Provider:extend()
 
 function GithubRestProvider.detect()
-  local gh = require('gh-actions.providers.github.rest._api')
   local server, repo = gh().get_current_repository()
 
   if not is_host_allowed(server) then
@@ -28,10 +38,11 @@ function GithubRestProvider.detect()
   return server ~= nil and repo ~= nil
 end
 
-function GithubRestProvider:init(_opts)
-  local gh = require('gh-actions.providers.github.rest._api')
-  local server, repo = gh.get_current_repository()
+---@param opts GithubRestProviderOptions
+function GithubRestProvider:init(opts)
+  local server, repo = gh().get_current_repository()
 
+  self.opts = vim.tbl_deep_extend('force', defaultOptions, opts)
   self.server = server
   self.repo = repo
 
@@ -48,9 +59,7 @@ end
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
 function GithubRestProvider:fetch()
-  local gh = require('gh-actions.providers.github.rest._api')
-
-  gh.get_workflows(self.server, self.repo, {
+  gh().get_workflows(self.server, self.repo, {
     callback = function(workflows)
       self.store.update_state(function(state)
         state.workflows = workflows
@@ -58,7 +67,7 @@ function GithubRestProvider:fetch()
     end,
   })
 
-  gh.get_repository_workflow_runs(self.server, self.repo, 100, {
+  gh().get_repository_workflow_runs(self.server, self.repo, 100, {
     callback = function(workflow_runs)
       local utils = require('gh-actions.utils')
       local old_workflow_runs = self.store.get_state().workflow_runs
@@ -77,7 +86,7 @@ function GithubRestProvider:fetch()
       )
 
       for _, run in ipairs(running_workflows) do
-        gh.get_workflow_run_jobs(self.server, self.repo, run.id, 20, {
+        gh().get_workflow_run_jobs(self.server, self.repo, run.id, 20, {
           callback = function(jobs)
             self.store.update_state(function(state)
               state.workflow_jobs[run.id] = jobs
@@ -93,7 +102,7 @@ function GithubRestProvider:connect()
   self.timer = vim.loop.new_timer()
   self.timer:start(
     0,
-    require('gh-actions.config').options.refresh_interval * 1000,
+    self.opts.refresh_interval * 1000,
     vim.schedule_wrap(function()
       self:fetch()
     end)
