@@ -8,7 +8,9 @@ local defaultConfig = {
   --- Provider options
   ---@class GhActionsProviders
   ---@field github? pipeline.providers.github.rest.Options
-  providers = {},
+  providers = {
+    github = {},
+  },
   --- Allowed hosts to fetch data from, github.com is always allowed
   --- @type string[]
   allowed_hosts = {},

@@ -14,25 +14,21 @@ function M.setup(opts)
   require('gh-actions.ui').setup()
   require('gh-actions.command').setup()
 
-  local provider = 'github'
-  local Provider = require('gh-actions.providers')[provider]
-  local provider_options = config.options.providers[provider]
+  M.pipeline = require('gh-actions.providers.pipeline_provider'):new(
+    config.options,
+    require('gh-actions.store'),
+    {}
+  )
+  for provider, provider_options in pairs(config.options.providers) do
+    local Provider = require('gh-actions.providers')[provider]
 
-  if Provider.detect() then
-    M.pipeline = Provider:new(
-      config.options,
-      require('gh-actions.store'),
-      provider_options
-    )
-  else
-    -- Use base class as a stub if no provider was detected, this greacefully
-    -- handles any method calls on the provider without us having to guard
-    -- them.
-    M.pipeline = require('gh-actions.providers.pipeline_provider'):new(
-      config.options,
-      require('gh-actions.store'),
-      {}
-    )
+    if Provider.detect() then
+      M.pipeline = Provider:new(
+        config.options,
+        require('gh-actions.store'),
+        provider_options
+      )
+    end
   end
 end
 
