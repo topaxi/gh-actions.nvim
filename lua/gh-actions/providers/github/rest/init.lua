@@ -60,10 +60,12 @@ end
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
 function GithubRestProvider:fetch()
+  local Mapper = require('gh-actions.providers.github.rest._mapper')
+
   gh().get_workflows(self.server, self.repo, {
     callback = function(workflows)
       self.store.update_state(function(state)
-        state.workflows = workflows
+        state.pipelines = vim.tbl_map(Mapper.to_pipeline, workflows)
       end)
     end,
   })
@@ -71,15 +73,17 @@ function GithubRestProvider:fetch()
   gh().get_repository_workflow_runs(self.server, self.repo, 100, {
     callback = function(workflow_runs)
       local utils = require('gh-actions.utils')
-      local old_workflow_runs = self.store.get_state().workflow_runs
+      local old_workflow_runs = self.store.get_state().runs
 
       self.store.update_state(function(state)
-        state.workflow_runs = workflow_runs
+        state.runs = utils.group_by(function(run)
+          return run.run_id
+        end, vim.tbl_map(Mapper.to_run, workflow_runs))
       end)
 
       local running_workflows = utils.uniq(
         function(run)
-          return run.id
+          return run.run_id
         end,
         vim.tbl_filter(function(run)
           return run.status ~= 'completed' and run.status ~= 'skipped'
@@ -87,10 +91,16 @@ function GithubRestProvider:fetch()
       )
 
       for _, run in ipairs(running_workflows) do
-        gh().get_workflow_run_jobs(self.server, self.repo, run.id, 20, {
+        gh().get_workflow_run_jobs(self.server, self.repo, run.run_id, 20, {
           callback = function(jobs)
             self.store.update_state(function(state)
-              state.workflow_jobs[run.id] = jobs
+              state.jobs[run.run_id] = vim.tbl_map(Mapper.to_job, jobs)
+
+              for _, job in ipairs(jobs) do
+                state.steps[job.id] = vim.tbl_map(function(step)
+                  return Mapper.to_step(job.id, step)
+                end, job.steps)
+              end
             end)
           end,
         })

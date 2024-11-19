@@ -74,7 +74,7 @@ function GhActionsRender:render(bufnr)
   local state = self.store:get_state()
 
   self:title(state)
-  self:workflows(state)
+  self:pipelines(state)
   self:trim()
 
   Buffer.render(self, bufnr)
@@ -86,37 +86,28 @@ function GhActionsRender:title(state)
   self:append(state.title):nl():nl()
 end
 
---- Render each workflow
+--- Render each pipeline
 ---@param state GhActionsState
-function GhActionsRender:workflows(state)
-  local workflows = state.workflows
-  local workflow_runs = state.workflow_runs
-
-  local workflow_runs_by_workflow_id = utils.group_by(function(workflow_run)
-    return workflow_run.workflow_id
-  end, workflow_runs)
-
-  for _, workflow in ipairs(workflows) do
-    local runs = workflow_runs_by_workflow_id[workflow.id] or {}
-
-    self:workflow(state, workflow, runs)
+function GhActionsRender:pipelines(state)
+  for _, pipeline in ipairs(state.pipelines) do
+    self:pipeline(state, pipeline, state.runs[pipeline.pipeline_id] or {})
   end
 end
 
 ---@param state GhActionsState
----@param workflow GhWorkflow
----@param runs GhWorkflowRun[]
-function GhActionsRender:workflow(state, workflow, runs)
-  self:with_location({ kind = 'workflow', value = workflow }, function()
+---@param pipeline pipeline.Pipeline
+---@param runs pipeline.Run[]
+function GhActionsRender:pipeline(state, pipeline, runs)
+  self:with_location({ kind = 'workflow', value = pipeline }, function()
     local runs_n = math.min(5, #runs)
 
     self
       :status_icon(runs[1])
       :append(' ')
-      :append(workflow.name, get_status_highlight(runs[1], 'run'))
+      :append(pipeline.name, get_status_highlight(runs[1], 'run'))
       :append(
-        state.workflow_configs[workflow.id]
-            and state.workflow_configs[workflow.id].config.on.workflow_dispatch
+        state.workflow_configs[pipeline.pipeline_id]
+            and state.workflow_configs[pipeline.pipeline_id].config.on.workflow_dispatch
             and (' ' .. Config.options.icons.workflow_dispatch)
           or ''
       )
@@ -125,7 +116,7 @@ function GhActionsRender:workflow(state, workflow, runs)
     -- TODO cutting down on how many we list here, as we fetch 100 overall repo
     -- runs on opening the split. I guess we do want to have this configurable.
     for _, run in ipairs { unpack(runs, 1, runs_n) } do
-      self:workflow_run(state, run)
+      self:run(state, run)
     end
   end)
 
@@ -135,28 +126,26 @@ function GhActionsRender:workflow(state, workflow, runs)
 end
 
 ---@param state GhActionsState
----@param run GhWorkflowRun
-function GhActionsRender:workflow_run(state, run)
+---@param run pipeline.Run
+function GhActionsRender:run(state, run)
   self:with_location({ kind = 'workflow_run', value = run }, function()
     self
       :status_icon(run, { indent = 1 })
       :append(' ')
-      :append(
-        run.head_commit.message:gsub('\n.*', ''),
-        get_status_highlight(run, 'run')
-      )
+      :append(run.name, get_status_highlight(run, 'run'))
       :nl()
 
     if run.status ~= 'completed' then
-      for _, job in ipairs(state.workflow_jobs[run.id] or {}) do
-        self:workflow_job(job)
+      for _, job in ipairs(state.jobs[run.run_id] or {}) do
+        self:job(state, job)
       end
     end
   end)
 end
 
----@param job GhWorkflowRunJob
-function GhActionsRender:workflow_job(job)
+---@param state GhActionsState
+---@param job pipeline.Job
+function GhActionsRender:job(state, job)
   self:with_location({ kind = 'workflow_job', value = job }, function()
     self
       :status_icon(job, { indent = 2 })
@@ -165,15 +154,15 @@ function GhActionsRender:workflow_job(job)
       :nl()
 
     if job.status ~= 'completed' then
-      for _, step in ipairs(job.steps) do
-        self:workflow_step(step)
+      for _, step in ipairs(state.steps[job.job_id]) do
+        self:step(step)
       end
     end
   end)
 end
 
----@param step GhWorkflowRunJobStep
-function GhActionsRender:workflow_step(step)
+---@param step pipeline.Step
+function GhActionsRender:step(step)
   self:with_location({ kind = 'workflow_step', value = step }, function()
     self
       :status_icon(step, { indent = 3 })

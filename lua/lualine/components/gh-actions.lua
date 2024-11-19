@@ -35,16 +35,15 @@ end
 function component:update_status()
   local state = self.store.get_state()
 
-  local latest_workflow_run = state.workflow_runs and state.workflow_runs[1]
-      or {}
+  local latest_workflow_run = state.runs and state.runs[1] or {}
 
   if not latest_workflow_run.status then
     return ''
   end
 
   return self.icons.get_workflow_run_icon(latest_workflow_run)
-      .. ' '
-      .. latest_workflow_run.name
+    .. ' '
+    .. latest_workflow_run.name
 end
 
 return component

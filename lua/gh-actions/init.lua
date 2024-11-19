@@ -54,15 +54,15 @@ function M.update_workflow_configs(state)
   local gh = require('gh-actions.providers.github.rest._api')
   local n = now()
 
-  for _, workflow in ipairs(state.workflows) do
+  for _, pipeline in ipairs(state.pipelines) do
     if
-      not state.workflow_configs[workflow.id]
-      or (n - state.workflow_configs[workflow.id].last_read)
+      not state.workflow_configs[pipeline.pipeline_id]
+      or (n - state.workflow_configs[pipeline.pipeline_id].last_read)
         > WORKFLOW_CONFIG_CACHE_TTL_S
     then
-      state.workflow_configs[workflow.id] = {
+      state.workflow_configs[pipeline.pipeline_id] = {
         last_read = n,
-        config = gh.get_workflow_config(workflow.path),
+        config = gh.get_workflow_config(pipeline.meta.workflow_path),
       }
     end
   end
@@ -202,11 +202,11 @@ function M.open()
                 gh.get_workflow_runs(server, repo, workflow.id, 5, {
                   callback = function(workflow_runs)
                     store.update_state(function(state)
-                      state.workflow_runs = utils.uniq(function(run)
+                      state.runs = utils.uniq(function(run)
                         return run.id
                       end, {
                         unpack(workflow_runs),
-                        unpack(state.workflow_runs),
+                        unpack(state.runs),
                       })
                     end)
                   end,
