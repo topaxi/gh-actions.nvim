@@ -24,6 +24,7 @@
 --- tree.
 
 ---@class Provider
+---@field protected config GhActionsConfig
 ---@field protected store GhActionsStore
 ---@field private listener_count integer
 local Provider = {}
@@ -35,14 +36,22 @@ function Provider:extend()
   })
 end
 
+function Provider.detect()
+  vim.notify_once('Provider does not implement detect', vim.log.levels.WARN)
+
+  return false
+end
+
 ---@generic T: Provider
+---@param config GhActionsConfig
 ---@param store GhActionsStore
 ---@param opts table
 ---@return self
-function Provider:new(store, opts)
+function Provider:new(config, store, opts)
   local instance = setmetatable({}, {
     __index = self,
   })
+  instance.config = config
   instance.store = store
   instance.listener_count = 0
   instance:init(opts)

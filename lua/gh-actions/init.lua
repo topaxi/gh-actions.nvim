@@ -17,100 +17,22 @@ function M.setup(opts)
   require('gh-actions.config').setup(opts)
   require('gh-actions.ui').setup()
   require('gh-actions.command').setup()
-end
 
-local function is_host_allowed(host)
-  local config = require('gh-actions.config')
+  local GithubRestProvider = require('gh-actions.providers.github.rest')
 
-  for _, allowed_host in ipairs(config.options.allowed_hosts) do
-    if host == allowed_host then
-      return true
-    end
-  end
-
-  return false
-end
-
---TODO Only periodically fetch all workflows
---     then fetch runs for a single workflow (tabs/expandable)
---     Maybe periodically fetch all workflow runs to update
---     "toplevel" workflow states
---TODO Maybe send lsp progress events when fetching, to interact
---     with fidget.nvim
-local function fetch_data()
-  local gh = require('gh-actions.github')
-  local store = require('gh-actions.store')
-  local server, repo = gh.get_current_repository()
-
-  store.update_state(function(state)
-    state.repo = repo
-    state.server = server
-  end)
-
-  if not is_host_allowed(server) then
-    return
-  end
-
-  gh.get_workflows(server, repo, {
-    callback = function(workflows)
-      store.update_state(function(state)
-        state.workflows = workflows
-      end)
-    end,
-  })
-
-  gh.get_repository_workflow_runs(server, repo, 100, {
-    callback = function(workflow_runs)
-      local utils = require('gh-actions.utils')
-      local old_workflow_runs = store.get_state().workflow_runs
-
-      store.update_state(function(state)
-        state.workflow_runs = workflow_runs
-      end)
-
-      local running_workflows = utils.uniq(
-        function(run)
-          return run.id
-        end,
-        vim.tbl_filter(function(run)
-          return run.status ~= 'completed' and run.status ~= 'skipped'
-        end, { unpack(old_workflow_runs), unpack(workflow_runs) })
-      )
-
-      for _, run in ipairs(running_workflows) do
-        gh.get_workflow_run_jobs(server, repo, run.id, 20, {
-          callback = function(jobs)
-            store.update_state(function(state)
-              state.workflow_jobs[run.id] = jobs
-            end)
-          end,
-        })
-      end
-    end,
-  })
+  M.pipeline = GithubRestProvider:new(
+    require('gh-actions.config').options,
+    require('gh-actions.store'),
+    {}
+  )
 end
 
 function M.start_polling()
-  M.timers = M.timers + 1
-
-  if not M.timer then
-    M.timer = vim.loop.new_timer()
-    M.timer:start(
-      0,
-      require('gh-actions.config').options.refresh_interval * 1000,
-      vim.schedule_wrap(fetch_data)
-    )
-  end
+  M.pipeline:listen()
 end
 
 function M.stop_polling()
-  M.timers = M.timers - 1
-
-  if M.timers == 0 then
-    M.timer:stop()
-    M.timer:close()
-    M.timer = nil
-  end
+  M.pipeline:close()
 end
 
 local function now()
