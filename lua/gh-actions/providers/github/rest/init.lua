@@ -47,7 +47,8 @@ function GithubRestProvider:init(opts)
   self.repo = repo
 
   self.store.update_state(function(state)
-    -- TODO: Repo is used in the ui title.
+    state.title = string.format('Github Workflows for %s', repo)
+    state.server = server
     state.repo = repo
   end)
 end

@@ -83,11 +83,7 @@ end
 --- Render title of the split window
 ---@param state GhActionsState
 function GhActionsRender:title(state)
-  if not state.repo then
-    self:append('Github Workflows'):nl():nl()
-  else
-    self:append(string.format('Github Workflows for %s', state.repo)):nl():nl()
-  end
+  self:append(state.title):nl():nl()
 end
 
 --- Render each workflow
