@@ -34,6 +34,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 {
   'topaxi/gh-actions.nvim',
+  dependencies = { 'MunifTanjim/nui.nvim' },
   keys = {
     { '<leader>gh', '<cmd>GhActions<cr>', desc = 'Open Github Actions' },
   },
