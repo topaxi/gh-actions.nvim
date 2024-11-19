@@ -2,7 +2,7 @@ local providers = {
   github = 'github.rest',
 }
 
----@class Providers
+---@class Providers: { [string]: Provider }
 ---@field github GithubRestProvider
 local M = setmetatable({}, {
   __index = function(_, key)

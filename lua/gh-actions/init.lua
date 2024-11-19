@@ -1,9 +1,5 @@
 local M = {
-  setup_called = false,
   init_root = '',
-  ---@type uv_timer_t|nil
-  timer = nil,
-  timers = 0,
 }
 
 ---@param opts? GhActionsConfig
@@ -11,8 +7,6 @@ function M.setup(opts)
   opts = opts or {}
 
   M.init_root = vim.fn.getcwd()
-
-  M.setup_called = true
 
   local config = require('gh-actions.config')
 
@@ -25,7 +19,7 @@ function M.setup(opts)
   local provider_options = config.options.providers[provider]
 
   M.pipeline =
-    Provider:new(config.options, require('gh-actions.store'), provider_options)
+      Provider:new(config.options, require('gh-actions.store'), provider_options)
 end
 
 function M.start_polling()
@@ -50,8 +44,8 @@ function M.update_workflow_configs(state)
 
   for _, workflow in ipairs(state.workflows) do
     if
-      not state.workflow_configs[workflow.id]
-      or (n - state.workflow_configs[workflow.id].last_read)
+        not state.workflow_configs[workflow.id]
+        or (n - state.workflow_configs[workflow.id].last_read)
         > WORKFLOW_CONFIG_CACHE_TTL_S
     then
       state.workflow_configs[workflow.id] = {
@@ -165,7 +159,7 @@ function M.open()
       --      default branch or current ref preselected?
       local default_branch = require('gh-actions.git').get_default_branch()
       local workflow_config =
-        require('gh-actions.yaml').read_yaml_file(workflow.path)
+          require('gh-actions.yaml').read_yaml_file(workflow.path)
 
       if not workflow_config or not workflow_config.on.workflow_dispatch then
         return
