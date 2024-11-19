@@ -14,17 +14,18 @@ function M.setup(opts)
 
   M.setup_called = true
 
-  require('gh-actions.config').setup(opts)
+  local config = require('gh-actions.config')
+
+  config.setup(opts)
   require('gh-actions.ui').setup()
   require('gh-actions.command').setup()
 
-  local GithubProvider = require('gh-actions.providers').github
+  local provider = 'github'
+  local Provider = require('gh-actions.providers')[provider]
+  local provider_options = config.options.providers[provider]
 
-  M.pipeline = GithubProvider:new(
-    require('gh-actions.config').options,
-    require('gh-actions.store'),
-    {}
-  )
+  M.pipeline =
+    Provider:new(config.options, require('gh-actions.store'), provider_options)
 end
 
 function M.start_polling()
