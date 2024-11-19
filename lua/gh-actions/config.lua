@@ -7,7 +7,7 @@ local defaultConfig = {
   indent = 2,
   --- Provider options
   ---@class GhActionsProviders
-  ---@field github? GithubRestProviderOptions
+  ---@field github? pipeline.providers.github.rest.Options
   providers = {},
   --- Allowed hosts to fetch data from, github.com is always allowed
   --- @type string[]

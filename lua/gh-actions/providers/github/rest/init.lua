@@ -16,14 +16,14 @@ local function is_host_allowed(host)
   return false
 end
 
----@class GithubRestProviderOptions
+---@class pipeline.providers.github.rest.Options
 ---@field refresh_interval? number
 local defaultOptions = {
   refresh_interval = 10,
 }
 
----@class GithubRestProvider: Provider
----@field protected opts GithubRestProviderOptions
+---@class pipeline.providers.github.rest.Provider: pipeline.Provider
+---@field protected opts pipeline.providers.github.rest.Options
 ---@field private server string
 ---@field private repo string
 local GithubRestProvider = Provider:extend()
@@ -38,7 +38,7 @@ function GithubRestProvider.detect()
   return server ~= nil and repo ~= nil
 end
 
----@param opts GithubRestProviderOptions
+---@param opts pipeline.providers.github.rest.Options
 function GithubRestProvider:init(opts)
   local server, repo = gh().get_current_repository()
 

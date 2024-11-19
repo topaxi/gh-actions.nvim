@@ -23,13 +23,13 @@
 --- jobs within a Pipeline. Groups can be used to sort/group these in the UI
 --- tree.
 
----@class Provider
+---@class pipeline.Provider
 ---@field protected config GhActionsConfig
 ---@field protected store GhActionsStore
 ---@field private listener_count integer
 local Provider = {}
 
----@return Provider
+---@return pipeline.Provider
 function Provider:extend()
   return setmetatable({}, {
     __index = self,
@@ -42,7 +42,7 @@ function Provider.detect()
   return false
 end
 
----@generic T: Provider
+---@generic T: pipeline.Provider
 ---@param config GhActionsConfig
 ---@param store GhActionsStore
 ---@param opts table
