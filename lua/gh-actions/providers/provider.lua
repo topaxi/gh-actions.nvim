@@ -45,7 +45,7 @@ end
 ---@generic T: pipeline.Provider
 ---@param config GhActionsConfig
 ---@param store GhActionsStore
----@param opts table
+---@param opts? table
 ---@return self
 function Provider:new(config, store, opts)
   local instance = setmetatable({}, {

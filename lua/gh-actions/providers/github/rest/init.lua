@@ -1,4 +1,4 @@
-local Provider = require('gh-actions.providers.pipeline_provider')
+local Provider = require('gh-actions.providers.provider')
 
 local function gh()
   return require('gh-actions.providers.github.rest._api')

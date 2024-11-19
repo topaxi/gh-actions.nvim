@@ -8,26 +8,28 @@ function M.setup(opts)
 
   M.init_root = vim.fn.getcwd()
 
-  local config = require('gh-actions.config')
-
-  config.setup(opts)
+  require('gh-actions.config').setup(opts)
   require('gh-actions.ui').setup()
   require('gh-actions.command').setup()
 
-  M.pipeline = require('gh-actions.providers.pipeline_provider'):new(
-    config.options,
-    require('gh-actions.store'),
-    {}
-  )
+  M.setup_provider()
+end
+
+function M.setup_provider()
+  if M.pipeline then
+    return
+  end
+
+  local config = require('gh-actions.config')
+  local store = require('gh-actions.store')
+
+  M.pipeline =
+    require('gh-actions.providers.provider'):new(config.options, store)
   for provider, provider_options in pairs(config.options.providers) do
     local Provider = require('gh-actions.providers')[provider]
 
     if Provider.detect() then
-      M.pipeline = Provider:new(
-        config.options,
-        require('gh-actions.store'),
-        provider_options
-      )
+      M.pipeline = Provider:new(config.options, store, provider_options)
     end
   end
 end
