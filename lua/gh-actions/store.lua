@@ -22,6 +22,7 @@ local initialState = {
   workflow_configs = {},
 }
 
+---@class GhActionsStore
 local M = {
   _state = initialState,
   _update = {},
