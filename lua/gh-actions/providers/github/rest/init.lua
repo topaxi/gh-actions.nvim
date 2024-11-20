@@ -9,18 +9,6 @@ local function gh_api()
   return require('gh-actions.providers.github.rest._api')
 end
 
-local function is_host_allowed(host)
-  local config = require('gh-actions.config')
-
-  for _, allowed_host in ipairs(config.options.allowed_hosts) do
-    if host == allowed_host then
-      return true
-    end
-  end
-
-  return false
-end
-
 ---@class pipeline.providers.github.rest.Options
 ---@field refresh_interval? number
 local defaultOptions = {
@@ -38,9 +26,10 @@ function GithubRestProvider.detect()
     return false
   end
 
+  local config = require('gh-actions.config')
   local server, repo = git().get_current_repository()
 
-  if not is_host_allowed(server) then
+  if not config.is_host_allowed(server) then
     return
   end
 

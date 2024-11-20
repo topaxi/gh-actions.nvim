@@ -85,4 +85,14 @@ function M.setup(opts)
   table.insert(M.options.allowed_hosts, 'github.com')
 end
 
+function M.is_host_allowed(host)
+  for _, allowed_host in ipairs(M.options.allowed_hosts) do
+    if host == allowed_host then
+      return true
+    end
+  end
+
+  return false
+end
+
 return M
