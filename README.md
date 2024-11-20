@@ -8,7 +8,7 @@ The pipeline.nvim plugin for Neovim allows developers to easily manage and dispa
 
 ## CI/CD Platform Support
 
-- [Github Actions](https://github.com/features/actions)
+- [GitHub Actions](https://github.com/features/actions)
 - [Gitlab CI/CD](https://docs.gitlab.com/ee/ci/) (fairly untested, feel free to
   report bugs or open PRs)
 
@@ -53,7 +53,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ## Authentication
 
-### Github
+### GitHub
 
 The plugin requires authentication with your GitHub account to access your workflows and runs. You can authenticate by running the `gh auth login command` in your terminal and following the prompts.
 
