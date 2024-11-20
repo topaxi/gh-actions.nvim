@@ -1,7 +1,3 @@
-local function gh()
-  return require('gh-actions.providers.github.rest._api')
-end
-
 ---@class GhActionsComponent
 ---@field protected super { init: fun(self: table, options: table) }
 local Component = require('lualine.component'):extend()
@@ -39,7 +35,7 @@ function Component:init(options)
   self.store = require('gh-actions.store')
   self.icons = require('gh-actions.utils.icons')
 
-  local server, repo = gh().get_current_repository()
+  local server, repo = require('gh-actions.git').get_current_repository()
 
   if not server or not repo then
     return
