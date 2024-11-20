@@ -4,7 +4,7 @@ local Component = require('lualine.component'):extend()
 
 ---@class pipeline.lualine.ComponentOptions
 local default_options = {
-  icon = '',
+  icon = '',
   ---@param component pipeline.lualine.Component
   ---@param state pipeline.State
   ---@return string
