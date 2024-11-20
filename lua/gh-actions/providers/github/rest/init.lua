@@ -1,6 +1,10 @@
 local Provider = require('gh-actions.providers.provider')
 
-local function gh()
+local function git()
+  return require('gh-actions.git')
+end
+
+local function gh_api()
   return require('gh-actions.providers.github.rest._api')
 end
 
@@ -29,7 +33,7 @@ local defaultOptions = {
 local GithubRestProvider = Provider:extend()
 
 function GithubRestProvider.detect()
-  local server, repo = gh().get_current_repository()
+  local server, repo = git().get_current_repository()
 
   if not is_host_allowed(server) then
     return
@@ -40,7 +44,7 @@ end
 
 ---@param opts pipeline.providers.github.rest.Options
 function GithubRestProvider:init(opts)
-  local server, repo = gh().get_current_repository()
+  local server, repo = git().get_current_repository()
 
   self.opts = vim.tbl_deep_extend('force', defaultOptions, opts)
   self.server = server
@@ -62,7 +66,7 @@ end
 function GithubRestProvider:fetch()
   local Mapper = require('gh-actions.providers.github.rest._mapper')
 
-  gh().get_workflows(self.server, self.repo, {
+  gh_api().get_workflows(self.server, self.repo, {
     callback = function(workflows)
       self.store.update_state(function(state)
         state.pipelines = vim.tbl_map(Mapper.to_pipeline, workflows)
@@ -70,7 +74,7 @@ function GithubRestProvider:fetch()
     end,
   })
 
-  gh().get_repository_workflow_runs(self.server, self.repo, 100, {
+  gh_api().get_repository_workflow_runs(self.server, self.repo, 100, {
     callback = function(workflow_runs)
       local utils = require('gh-actions.utils')
       local old_workflow_runs = self.store.get_state().runs
@@ -94,7 +98,7 @@ function GithubRestProvider:fetch()
       )
 
       for _, run in ipairs(running_workflows) do
-        gh().get_workflow_run_jobs(self.server, self.repo, run.run_id, 20, {
+        gh_api().get_workflow_run_jobs(self.server, self.repo, run.run_id, 20, {
           callback = function(jobs)
             self.store.update_state(function(state)
               state.jobs[run.run_id] = vim.tbl_map(Mapper.to_job, jobs)

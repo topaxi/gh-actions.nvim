@@ -51,7 +51,7 @@ local WORKFLOW_CONFIG_CACHE_TTL_S = 10
 ---TODO We should run this after fetching the workflows instead of within the state update event
 ---@param state GhActionsState
 function M.update_workflow_configs(state)
-  local gh = require('gh-actions.providers.github.rest._api')
+  local gh_utils = require('gh-actions.providers.github.utils')
   local n = now()
 
   for _, pipeline in ipairs(state.pipelines) do
@@ -62,7 +62,7 @@ function M.update_workflow_configs(state)
     then
       state.workflow_configs[pipeline.pipeline_id] = {
         last_read = n,
-        config = gh.get_workflow_config(pipeline.meta.workflow_path),
+        config = gh_utils.get_workflow_config(pipeline.meta.workflow_path),
       }
     end
   end
@@ -160,7 +160,7 @@ function M.open()
 
   -- TODO Move this into its own module, ui?
   ui.split:map('n', 'd', function()
-    local gh = require('gh-actions.providers.github.rest._api')
+    local gh_api = require('gh-actions.providers.github.rest._api')
     local workflow = ui.get_workflow()
 
     if workflow then
@@ -195,11 +195,11 @@ function M.open()
         if #questions > 0 and i <= #questions then
           questions[i]:mount()
         else
-          gh.dispatch_workflow(server, repo, workflow.id, default_branch, {
+          gh_api.dispatch_workflow(server, repo, workflow.id, default_branch, {
             body = { inputs = input_values or {} },
             callback = function(_res)
               utils.delay(2000, function()
-                gh.get_workflow_runs(server, repo, workflow.id, 5, {
+                gh_api.get_workflow_runs(server, repo, workflow.id, 5, {
                   callback = function(workflow_runs)
                     store.update_state(function(state)
                       state.runs = utils.uniq(function(run)
