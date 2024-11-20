@@ -5,14 +5,12 @@ function M.check()
 
   health.start('Checking ability to parse yaml files')
 
-  local has_native_module, native_module_error =
-    pcall(require, 'gh_actions_native.yaml')
+  local has_native_module = pcall(require, 'gh_actions_native.yaml')
 
   if has_native_module then
     health.ok('Found native module')
   else
     health.warn('No native module found')
-    health.error(native_module_error)
   end
 
   local has_yq_installed = vim.fn.executable('yq') == 1
@@ -30,6 +28,7 @@ function M.check()
   end
 
   require('gh-actions.providers.github.rest.health').check()
+  require('gh-actions.providers.gitlab.graphql.health').check()
 end
 
 return M
