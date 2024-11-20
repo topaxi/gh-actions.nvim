@@ -88,26 +88,46 @@ function M.open()
   ui.open()
   ui.split:map('n', 'q', M.close, { noremap = true })
 
-  ui.split:map('n', { 'gp', 'gw' }, function()
+  ui.split:map('n', 'gp', function()
     open_pipeline_url(ui.get_pipeline())
-  end, { noremap = true })
+  end, { noremap = true, desc = 'Open pipeline URL' })
+
+  ui.split:map('n', 'gw', function()
+    vim.notify(
+      'Keybind gw to jump to workflow is deprecated, use gp instead',
+      vim.log.levels.WARN
+    )
+
+    open_pipeline_url(ui.get_pipeline())
+  end, { noremap = true, desc = 'Open pipeline URL (deprecated)' })
 
   ui.split:map('n', 'gr', function()
     open_pipeline_url(ui.get_run())
-  end, { noremap = true })
+  end, { noremap = true, desc = 'Open pipeline run URL' })
 
   ui.split:map('n', 'gj', function()
     open_pipeline_url(ui.get_job())
-  end, { noremap = true })
+  end, { noremap = true, desc = 'Open pipeline job URL' })
 
   ui.split:map('n', 'gs', function()
     open_pipeline_url(ui.get_step())
-  end, { noremap = true })
+  end, { noremap = true, desc = 'Open pipeline step URL' })
 
-  -- TODO Move this into its own module, ui?
   ui.split:map('n', 'd', function()
     M.pipeline:dispatch(ui.get_pipeline())
-  end, { noremap = true })
+  end, { noremap = true, desc = 'Dispatch pipeline run' })
+
+  ui.split:map('n', 'rr', function()
+    M.pipeline:retry(ui.get_run())
+  end, { noremap = true, desc = 'Retry pipeline run' })
+
+  ui.split:map('n', 'rj', function()
+    M.pipeline:retry(ui.get_job())
+  end, { noremap = true, desc = 'Retry pipeline job' })
+
+  ui.split:map('n', 'rs', function()
+    M.pipeline:retry(ui.get_step())
+  end, { noremap = true, desc = 'Retry pipeline step' })
 
   M.start_polling()
 

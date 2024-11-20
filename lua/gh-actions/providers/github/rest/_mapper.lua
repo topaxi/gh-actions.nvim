@@ -1,6 +1,16 @@
 ---@class pipeline.providers.github.rest.Mapper
 local M = {}
 
+---By default the workflow.html_url points to the workflow definition file.
+---We want to jump to the UI of all the workflow runs instead.
+---Example:
+---  input: https://github.com/topaxi/gh-actions.nvim/blob/main/.github/workflows/dispatch-echo.yaml
+---  output: https://github.com/topaxi/gh-actions.nvim/actions/workflows/dispatch-echo.yaml
+---@param workflow GhWorkflow
+local function workflow_url(workflow)
+  return workflow.html_url:gsub('blob/main/%.github', 'actions')
+end
+
 ---@class pipeline.providers.github.rest.Pipeline: pipeline.Pipeline
 ---@field meta { workflow_path: string }
 
@@ -10,7 +20,7 @@ function M.to_pipeline(workflow)
   return {
     pipeline_id = workflow.id,
     name = workflow.name,
-    url = workflow.html_url,
+    url = workflow_url(workflow),
     meta = { workflow_path = workflow.path },
   }
 end

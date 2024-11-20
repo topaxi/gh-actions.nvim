@@ -73,7 +73,7 @@ function Provider:disconnect() end
 function Provider:dispatch(pipeline) end
 
 ---Retry a failed pipeline run/job/step
----@param pipeline_object pipeline.PipelineObject
+---@param pipeline_object pipeline.PipelineObject|nil
 function Provider:retry(pipeline_object) end
 
 function Provider:listen()
