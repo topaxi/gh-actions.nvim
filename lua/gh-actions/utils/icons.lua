@@ -4,7 +4,7 @@ end
 
 local M = {}
 
----@return GhActionsIcons
+---@return pipeline.config.Icons
 function M.get_icons()
   return Config().options.icons
 end

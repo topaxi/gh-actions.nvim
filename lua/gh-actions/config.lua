@@ -1,4 +1,4 @@
----@class GhActionsConfig
+---@class pipeline.Config
 local defaultConfig = {
   --- The browser executable path to open workflow runs/jobs in
   ---@type string|nil
@@ -6,8 +6,9 @@ local defaultConfig = {
   --- How much workflow runs and jobs should be indented
   indent = 2,
   --- Provider options
-  ---@class GhActionsProviders
+  ---@class pipeline.config.Providers
   ---@field github? pipeline.providers.github.rest.Options
+  ---@field gitlab? pipeline.providers.gitlab.graphql.Options
   providers = {
     github = {},
     gitlab = {},
@@ -15,10 +16,10 @@ local defaultConfig = {
   --- Allowed hosts to fetch data from, github.com is always allowed
   --- @type string[]
   allowed_hosts = {},
-  ---@class GhActionsIcons
+  ---@class pipeline.config.Icons
   icons = {
     workflow_dispatch = '⚡️',
-    ---@class GhActionsIconsConclusion
+    ---@class pipeline.config.IconConclusion
     conclusion = {
       success = '✓',
       failure = 'X',
@@ -27,7 +28,7 @@ local defaultConfig = {
       skipped = '◌',
       action_required = '⚠',
     },
-    ---@class GhActionsIconsStatus
+    ---@class pipeline.config.IconStatus
     status = {
       unknown = '?',
       pending = '○',
@@ -37,26 +38,42 @@ local defaultConfig = {
       in_progress = '●',
     },
   },
-  ---@class GhActionsHighlights
+  ---@class pipeline.config.Highlights
   highlights = {
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconSuccess = { link = 'LspDiagnosticsVirtualTextHint' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconFailure = { link = 'LspDiagnosticsVirtualTextError' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconStartup_failure = {
       link = 'LspDiagnosticsVirtualTextError',
     },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconPending = { link = 'LspDiagnosticsVirtualTextWarning' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconRequested = { link = 'LspDiagnosticsVirtualTextWarning' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconWaiting = { link = 'LspDiagnosticsVirtualTextWarning' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconIn_progress = { link = 'LspDiagnosticsVirtualTextWarning' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconCancelled = { link = 'Comment' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunIconSkipped = { link = 'Comment' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunCancelled = { link = 'Comment' },
+    ---@type vim.api.keyset.highlight
     GhActionsRunSkipped = { link = 'Comment' },
+    ---@type vim.api.keyset.highlight
     GhActionsJobCancelled = { link = 'Comment' },
+    ---@type vim.api.keyset.highlight
     GhActionsJobSkipped = { link = 'Comment' },
+    ---@type vim.api.keyset.highlight
     GhActionsStepCancelled = { link = 'Comment' },
+    ---@type vim.api.keyset.highlight
     GhActionsStepSkipped = { link = 'Comment' },
   },
+  ---@type nui_split_options
   split = {
     relative = 'editor',
     position = 'right',
@@ -76,7 +93,7 @@ local M = {
   options = defaultConfig,
 }
 
----@param opts? GhActionsConfig
+---@param opts? pipeline.Config
 function M.setup(opts)
   opts = opts or {}
 

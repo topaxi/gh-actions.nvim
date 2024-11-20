@@ -1,11 +1,11 @@
----@class GhActionsComponent
+---@class pipeline.lualine.Component
 ---@field protected super { init: fun(self: table, options: table) }
 local Component = require('lualine.component'):extend()
 
----@class GhActionsComponentOptions
+---@class pipeline.lualine.ComponentOptions
 local default_options = {
   icon = '',
-  ---@param component GhActionsComponent
+  ---@param component pipeline.lualine.Component
   ---@param state GhActionsState
   ---@return string
   format = function(component, state)
@@ -26,7 +26,7 @@ local default_options = {
 }
 
 ---@override
----@param options GhActionsComponentOptions
+---@param options pipeline.lualine.ComponentOptions
 function Component:init(options)
   self.options = vim.tbl_deep_extend('force', default_options, options or {})
 

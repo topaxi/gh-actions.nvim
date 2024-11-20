@@ -24,7 +24,7 @@
 --- tree.
 
 ---@class pipeline.Provider
----@field protected config GhActionsConfig
+---@field protected config pipeline.Config
 ---@field protected store GhActionsStore
 ---@field private listener_count integer
 local Provider = {}
@@ -43,7 +43,7 @@ function Provider.detect()
 end
 
 ---@generic T: pipeline.Provider
----@param config GhActionsConfig
+---@param config pipeline.Config
 ---@param store GhActionsStore
 ---@param opts? table
 ---@return self

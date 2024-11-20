@@ -2,7 +2,7 @@ local M = {
   init_root = '',
 }
 
----@param opts? GhActionsConfig
+---@param opts? pipeline.Config
 function M.setup(opts)
   opts = opts or {}
 
