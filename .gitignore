@@ -1,4 +1,4 @@
-lua/deps
-lua/libgh_actions_rust.so
+lua/gh_actions_native/deps
+lua/gh_actions_native/yaml.so
 
 target

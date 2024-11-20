@@ -1,5 +1,5 @@
 local utils = require('gh-actions.utils')
-local has_rust_module, rust = pcall(require, 'gh-actions.rust')
+local has_native_module, native_yaml = pcall(require, 'gh_actions_native.yaml')
 
 local M = {}
 
@@ -14,8 +14,8 @@ end
 ---@param yamlstr string|nil
 ---@return table|nil
 function M.parse_yaml(yamlstr)
-  if has_rust_module then
-    return rust.parse_yaml(yamlstr or '')
+  if has_native_module then
+    return native_yaml.parse_yaml(yamlstr or '')
   else
     local result = vim
       .system({ 'yq', '-j' }, {
@@ -28,7 +28,7 @@ function M.parse_yaml(yamlstr)
 end
 
 function M.is_yaml_nil(value)
-  return has_rust_module and value == rust.NIL
+  return has_native_module and value == native_yaml.NIL
 end
 
 return M

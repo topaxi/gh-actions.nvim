@@ -1,13 +1,17 @@
 .PHONY: all build clean
 
-all: build
+all: build copy
 
 clean:
-	rm -rf ./lua/libgh_actions_rust.so ./lua/deps
+	rm -rf ./lua/gh_actions_native/yaml.so ./lua/gh_actions_native/deps
 
-build: clean
+depsdir:
+	mkdir -p ./lua/gh_actions_native/deps
+
+build:
 	cargo build --release
-	mkdir -p ./lua/deps/
-	cp ./target/release/libgh_actions_rust.dylib ./lua/libgh_actions_rust.so || true
-	cp ./target/release/libgh_actions_rust.so ./lua/libgh_actions_rust.so || true
-	cp ./target/release/deps/*.rlib ./lua/deps/
+
+copy: clean depsdir
+	cp ./target/release/libgh_actions_rust.dylib ./lua/gh_actions_native/yaml.so || true
+	cp ./target/release/libgh_actions_rust.so ./lua/gh_actions_native/yaml.so || true
+	cp ./target/release/deps/*.rlib ./lua/gh_actions_native/deps/

@@ -5,12 +5,14 @@ function M.check()
 
   health.start('Checking ability to parse yaml files')
 
-  local has_rust_module = pcall(require, 'gh-actions.rust')
+  local has_native_module, native_module_error =
+    pcall(require, 'gh_actions_native.yaml')
 
-  if has_rust_module then
-    health.ok('Found rust module')
+  if has_native_module then
+    health.ok('Found native module')
   else
-    health.warn('No rust module found')
+    health.warn('No native module found')
+    health.error(native_module_error)
   end
 
   local has_yq_installed = vim.fn.executable('yq') == 1
@@ -21,7 +23,7 @@ function M.check()
     health.warn('No yq executable found')
   end
 
-  if has_rust_module or has_yq_installed then
+  if has_native_module or has_yq_installed then
     health.ok('Found yaml parser')
   else
     health.error('No yaml parser found')
