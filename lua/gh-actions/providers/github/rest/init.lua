@@ -76,9 +76,12 @@ function GithubRestProvider:fetch()
       local old_workflow_runs = self.store.get_state().runs
 
       self.store.update_state(function(state)
+        local runs = vim.tbl_map(Mapper.to_run, workflow_runs)
+
+        state.latest_run = runs[1]
         state.runs = utils.group_by(function(run)
-          return run.run_id
-        end, vim.tbl_map(Mapper.to_run, workflow_runs))
+          return run.pipeline_id
+        end, runs)
       end)
 
       local running_workflows = utils.uniq(

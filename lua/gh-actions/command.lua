@@ -10,13 +10,7 @@ local function handle_gh_actions_command(a)
   elseif action == 'close' then
     return gha.close()
   elseif action == 'toggle' then
-    local ui = require('gh-actions.ui')
-
-    if ui.split.winid then
-      return gha.close()
-    else
-      return gha.open()
-    end
+    return gha.toggle()
   end
 end
 

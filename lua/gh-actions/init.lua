@@ -287,4 +287,14 @@ function M.close()
   store.off_update(M.update_workflow_configs)
 end
 
+function M.toggle()
+  local ui = require('gh-actions.ui')
+
+  if ui.split.winid then
+    return M.close()
+  else
+    return M.open()
+  end
+end
+
 return M

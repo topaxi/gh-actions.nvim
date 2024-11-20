@@ -9,15 +9,16 @@ local utils = require('gh-actions.utils')
 ---@field repo string
 ---@field server string
 ---@field pipelines pipeline.Pipeline[]
----@field runs table<integer | string, pipeline.Run[]>
----@field jobs table<integer | string, pipeline.Job[]>
----@field steps table<integer | string, pipeline.Step[]>
+---@field runs table<integer | string, pipeline.Run[]> Runs indexed by pipeline id
+---@field jobs table<integer | string, pipeline.Job[]> Jobs indexed by run id
+---@field steps table<integer | string, pipeline.Step[]> Steps indexed by job id
 ---@field workflow_configs table<integer, GhActionsStateWorkflowConfig>
 local initialState = {
   title = 'pipeline.nvim',
   repo = '',
   server = '',
   pipelines = {},
+  latest_run = nil,
   runs = {},
   jobs = {},
   workflow_configs = {},

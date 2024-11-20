@@ -2,19 +2,40 @@ local function gh()
   return require('gh-actions.providers.github.rest._api')
 end
 
-local component = require('lualine.component'):extend()
-
 ---@class GhActionsComponent
+---@field protected super { init: fun(self: table, options: table) }
+local Component = require('lualine.component'):extend()
+
+---@class GhActionsComponentOptions
 local default_options = {
   icon = '',
+  ---@param component GhActionsComponent
+  ---@param state GhActionsState
+  ---@return string
+  format = function(component, state)
+    local latest_run = state.latest_run
+
+    if not latest_run or not latest_run.status then
+      return ''
+    end
+
+    return component.icons.get_workflow_run_icon(latest_run)
+      .. ' '
+      .. latest_run.name
+  end,
+
+  on_click = function()
+    require('gh-actions').toggle()
+  end,
 }
 
 ---@override
----@param options GhActionsComponent
-function component:init(options)
-  component.super.init(self, options)
+---@param options GhActionsComponentOptions
+function Component:init(options)
+  options = vim.tbl_deep_extend('force', default_options, options or {})
 
-  self.options = vim.tbl_deep_extend('force', default_options, options or {})
+  Component.super.init(self, options)
+
   self.store = require('gh-actions.store')
   self.icons = require('gh-actions.utils.icons')
 
@@ -32,18 +53,8 @@ function component:init(options)
 end
 
 ---@override
-function component:update_status()
-  local state = self.store.get_state()
-
-  local latest_workflow_run = state.runs and state.runs[1] or {}
-
-  if not latest_workflow_run.status then
-    return ''
-  end
-
-  return self.icons.get_workflow_run_icon(latest_workflow_run)
-    .. ' '
-    .. latest_workflow_run.name
+function Component:update_status()
+  return self.options.format(self, self.store.get_state())
 end
 
-return component
+return Component
