@@ -68,6 +68,14 @@ function Provider:connect() end
 ---Stop fetching or listening to data from the provider.
 function Provider:disconnect() end
 
+---Dispatch a new pipeline run
+---@param pipeline pipeline.Pipeline|nil
+function Provider:dispatch(pipeline) end
+
+---Retry a failed pipeline run/job/step
+---@param pipeline_object pipeline.PipelineObject
+function Provider:retry(pipeline_object) end
+
 function Provider:listen()
   if self.listener_count == 0 then
     self:connect()
