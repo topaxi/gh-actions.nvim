@@ -68,58 +68,6 @@ function M.update_workflow_configs(state)
   end
 end
 
----@param opts { prompt: string, title: string, default_value: string, on_submit: fun(value: string) }
-local function text(opts)
-  local Input = require('nui.input')
-
-  return Input({
-    relative = 'editor',
-    position = '50%',
-    size = {
-      width = #opts.prompt + 32,
-    },
-    border = {
-      style = 'rounded',
-      text = { top = opts.title },
-    },
-  }, {
-    prompt = opts.prompt,
-    default_value = opts.default_value,
-    on_submit = opts.on_submit,
-  })
-end
-
----@param opts { prompt: string, title: string, options: string[], on_submit: fun(value: { text: string }) }
-local function menu(opts)
-  local Menu = require('nui.menu')
-  local lines = { Menu.separator(opts.prompt) }
-
-  for _, option in ipairs(opts.options) do
-    table.insert(lines, Menu.item(option))
-  end
-
-  return Menu({
-    relative = 'editor',
-    position = '50%',
-    size = {
-      width = #opts.prompt + 32,
-    },
-    border = {
-      style = 'rounded',
-      text = { top = opts.title },
-    },
-  }, {
-    lines = lines,
-    on_submit = opts.on_submit,
-    keymap = {
-      focus_next = { 'j', '<Down>', '<Tab>' },
-      focus_prev = { 'k', '<Up>', '<S-Tab>' },
-      close = { '<Esc>', '<C-c>' },
-      submit = { '<CR>', '<Space>' },
-    },
-  })
-end
-
 function M.open()
   local ui = require('gh-actions.ui')
   local store = require('gh-actions.store')
@@ -234,7 +182,7 @@ function M.open()
         local prompt = string.format('%s: ', input.description or name)
 
         if input.type == 'choice' then
-          local question = menu {
+          local question = require('gh-actions.ui.components.select') {
             prompt = prompt,
             title = workflow.name,
             options = input.options,
@@ -250,7 +198,7 @@ function M.open()
 
           table.insert(questions, question)
         else
-          local question = text {
+          local question = require('gh-actions.ui.components.input') {
             prompt = prompt,
             title = workflow.name,
             default_value = input.default,
