@@ -117,6 +117,7 @@ function GithubRestProvider:fetch()
   })
 end
 
+---@param pipeline pipeline.providers.github.rest.Pipeline|nil
 function GithubRestProvider:dispatch(pipeline)
   if not pipeline then
     return
@@ -132,6 +133,7 @@ function GithubRestProvider:dispatch(pipeline)
     -- TODO should we get current ref instead or show an input with the
     --      default branch or current ref preselected?
     local default_branch = require('gh-actions.git').get_default_branch()
+    ---@type pipeline.providers.github.WorkflowDef|nil
     local workflow_config =
       require('gh-actions.yaml').read_yaml_file(pipeline.meta.workflow_path)
 
@@ -139,9 +141,11 @@ function GithubRestProvider:dispatch(pipeline)
       return
     end
 
+    ---@type pipeline.providers.github.WorkflowDef.DispatchInputs
     local inputs = {}
 
     if not utils.is_nil(workflow_config.on.workflow_dispatch) then
+      ---@type pipeline.providers.github.WorkflowDef.DispatchInputs
       inputs = workflow_config.on.workflow_dispatch.inputs
     end
 

@@ -1,8 +1,11 @@
 ---@class pipeline.providers.github.rest.Mapper
 local M = {}
 
+---@class pipeline.providers.github.rest.Pipeline: pipeline.Pipeline
+---@field meta { workflow_path: string }
+
 ---@param workflow GhWorkflow
----@return pipeline.Pipeline
+---@return pipeline.providers.github.rest.Pipeline
 function M.to_pipeline(workflow)
   return {
     pipeline_id = workflow.id,

@@ -1,3 +1,5 @@
+---@meta
+
 ---@class pipeline.BasePipelineObject
 ---@field name? string
 ---@field action? fun()
