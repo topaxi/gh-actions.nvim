@@ -6,6 +6,12 @@ The pipeline.nvim plugin for Neovim allows developers to easily manage and dispa
   <img src="https://user-images.githubusercontent.com/213788/234685256-e915dc9c-1d79-4d64-b771-be1f736a203b.png" alt="Screenshot of pipeline.nvim">
 </p>
 
+## CI/CD Platform Support
+
+- [Github Actions](https://github.com/features/actions)
+- [Gitlab CI/CD](https://docs.gitlab.com/ee/ci/) (fairly untested, feel free to
+  report bugs or open PRs)
+
 ## Features
 
 - List pipelines and their runs for the current repository
