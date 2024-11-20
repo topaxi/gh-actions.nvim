@@ -1,4 +1,4 @@
-function gh_utils()
+local function gh_utils()
   return require('pipeline.providers.github.utils')
 end
 
