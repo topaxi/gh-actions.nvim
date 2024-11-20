@@ -65,7 +65,7 @@ function GitlabGraphQLProvider:fetch()
     local pipeline = Mapper.to_pipeline(response.data.project)
     local runs = {
       [pipeline.pipeline_id] = vim.tbl_map(function(node)
-        return Mapper.to_run(pipeline.id, node)
+        return Mapper.to_run(pipeline.pipeline_id, node)
       end, response.data.project.pipelines.nodes),
     }
     local jobs = utils.group_by(
