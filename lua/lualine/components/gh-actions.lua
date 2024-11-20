@@ -32,9 +32,9 @@ local default_options = {
 ---@override
 ---@param options GhActionsComponentOptions
 function Component:init(options)
-  options = vim.tbl_deep_extend('force', default_options, options or {})
+  self.options = vim.tbl_deep_extend('force', default_options, options or {})
 
-  Component.super.init(self, options)
+  Component.super.init(self, self.options)
 
   self.store = require('gh-actions.store')
   self.icons = require('gh-actions.utils.icons')
