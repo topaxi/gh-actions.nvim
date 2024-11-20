@@ -156,7 +156,7 @@ function GhActionsRender:job(state, job)
       :append(job.name, get_status_highlight(job, 'job'))
       :nl()
 
-    if job.status ~= 'completed' then
+    if job.status ~= 'completed' and state.steps[job.job_id] then
       for _, step in ipairs(state.steps[job.job_id]) do
         self:step(step)
       end

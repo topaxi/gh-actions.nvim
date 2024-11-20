@@ -1,0 +1,34 @@
+query ($repo: ID!, $limit: Int!) {
+  project(fullPath: $repo) {
+    id
+    ciConfigPathOrDefault
+    pipelines(first: $limit) {
+      nodes {
+        id
+        name
+        commit {
+          message
+        }
+        path
+        cancelable
+        retryable
+        createdAt
+        status
+        jobs {
+          nodes {
+            id
+            name
+            status
+            manualJob
+            retryable
+            cancelable
+            stage {
+              name
+            }
+            webPath
+          }
+        }
+      }
+    }
+  }
+}

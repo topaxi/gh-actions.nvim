@@ -1,11 +1,15 @@
 ---@meta
 
+---@alias pipeline.Status 'pending'|'queued'|'requested'|'waiting'|'in_progress'|'completed'|'unknown'
+---@alias pipeline.Conclusion 'success'|'failure'|'cancelled'|'skipped'|'action_required'|'unknown'
+
 ---@class pipeline.BasePipelineObject
 ---@field name? string
 ---@field action? fun()
 ---@field url? string
----@field status? string
----@field conclusion? string
+---@field status? pipeline.Status
+---@field conclusion? pipeline.Conclusion
+---@field cancelable? boolean
 ---@field meta? table
 ---@package
 

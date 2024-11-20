@@ -1,4 +1,5 @@
 local providers = {
+  gitlab = 'gitlab.graphql',
   github = 'github.rest',
 }
 
