@@ -1,5 +1,5 @@
 [package]
-name = 'gh-actions-rust'
+name = 'pipeline_native'
 version = '0.0.1'
 edition = '2021'
 
@@ -7,6 +7,6 @@ edition = '2021'
 crate-type = ["cdylib"]
 
 [dependencies]
-mlua = {version = "0.6", features = ["luajit", "module", "macros", "async", "serialize"]}
+mlua = { version = "0.10", features = ["luajit", "module", "serialize"] }
 serde = "1.0"
 serde_yaml = "0.9"

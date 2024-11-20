@@ -1,6 +1,6 @@
-local gh = require('gh-actions.github')
-
 describe('get_github_token', function()
+  local gh = require('pipeline.providers.github.utils')
+
   before_each(function()
     vim.env.GITHUB_TOKEN = nil
   end)

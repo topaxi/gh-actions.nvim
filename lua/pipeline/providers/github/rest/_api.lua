@@ -1,71 +1,9 @@
+local function gh_utils()
+  return require('pipeline.providers.github.utils')
+end
+
+---@class pipeline.providers.github.rest.Api
 local M = {}
-
----@param str string
----@return string
-local function strip_git_suffix(str)
-  if str:sub(-4) == '.git' then
-    return str:sub(1, -5)
-  end
-
-  return str
-end
-
-function M.get_current_repository()
-  local job = require('plenary.job')
-  local origin_url_job = job:new {
-    command = 'git',
-    args = {
-      'config',
-      '--get',
-      'remote.origin.url',
-    },
-  }
-
-  origin_url_job:sync()
-
-  local origin_url = table.concat(origin_url_job:result(), '')
-
-  return strip_git_suffix(origin_url):match('([^@/:]+)[:/]([^/]+/[^/]+)$')
-end
-
----@param cmd? string
----@param server? string
----@return string|nil
-local function get_token_from_gh_cli(cmd, server)
-  local has_gh_installed = vim.fn.executable('gh') == 1
-  if not has_gh_installed and not cmd then
-    return nil
-  end
-
-  local res
-  if cmd then
-    res = vim.fn.system(cmd)
-  else
-    local gh_enterprise_flag = ''
-    if server ~= nil and server ~= '' then
-      gh_enterprise_flag = ' --hostname ' .. vim.fn.shellescape(server)
-    end
-    res = vim.fn.system('gh auth token' .. gh_enterprise_flag)
-  end
-
-  local token = string.gsub(res or '', '\n', '')
-
-  if token == '' then
-    return nil
-  end
-
-  return token
-end
-
----@param cmd? string
----@param server? string
----@return string
-function M.get_github_token(cmd, server)
-  return vim.env.GITHUB_TOKEN
-    or get_token_from_gh_cli(cmd, server)
-    -- TODO: We could also ask for the token here via nui
-    or assert(nil, 'No GITHUB_TOKEN found in env and no gh cli config found')
-end
 
 ---@param server string
 ---@param path string
@@ -99,7 +37,7 @@ function M.fetch(server, path, opts)
       headers = {
         Authorization = string.format(
           'Bearer %s',
-          M.get_github_token(nil, server)
+          gh_utils().get_github_token(nil, server)
         ),
       },
     })
@@ -212,7 +150,7 @@ end
 
 ---@param server string
 ---@param repo string
----@param workflow_id integer
+---@param workflow_id integer|string
 ---@param per_page? integer
 ---@param opts? { callback?: fun(workflow_runs: GhWorkflowRun[]): any }
 function M.get_workflow_runs(server, repo, workflow_id, per_page, opts)
@@ -229,7 +167,7 @@ end
 
 ---@param server string
 ---@param repo string
----@param workflow_id integer
+---@param workflow_id integer|string
 ---@param ref string
 ---@param opts? table
 function M.dispatch_workflow(server, repo, workflow_id, ref, opts)
@@ -301,23 +239,6 @@ function M.get_workflow_run_jobs(server, repo, workflow_run_id, per_page, opts)
       end,
     })
   )
-end
-
----@param path string
----@return table
-function M.get_workflow_config(path)
-  path = vim.fn.expand(path)
-
-  local utils = require('gh-actions.utils')
-  local workflow_yaml = utils.read_file(path) or ''
-  local config = {
-    on = {
-      workflow_dispatch = workflow_yaml:find('workflow_dispatch'),
-    },
-  }
-
-  ---@cast config table
-  return config
 end
 
 return M

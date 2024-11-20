@@ -1,10 +1,10 @@
 local function Config()
-  return require('gh-actions.config')
+  return require('pipeline.config')
 end
 
 local M = {}
 
----@return GhActionsIcons
+---@return pipeline.config.Icons
 function M.get_icons()
   return Config().options.icons
 end

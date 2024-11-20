@@ -1,4 +1,6 @@
-lua/deps
-lua/libgh_actions_rust.so
+lua/pipeline_native/deps
+lua/pipeline_native/yaml.so
 
 target
+
+.tests

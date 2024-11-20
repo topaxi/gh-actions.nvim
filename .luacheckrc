@@ -1,5 +1,6 @@
 ignore = {
-  "631", -- max_line_length
+  '212', -- unused_argument
+  '631', -- max_line_length
 }
 read_globals = {
   vim = {
@@ -15,7 +16,7 @@ read_globals = {
       },
     },
   },
-  "describe",
-  "it",
-  "assert",
+  'describe',
+  'it',
+  'assert',
 }

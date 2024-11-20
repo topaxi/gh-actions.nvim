@@ -1,4 +1,4 @@
-local stringUtils = require('gh-actions.utils.string')
+local stringUtils = require('pipeline.utils.string')
 
 local M = {
   string = stringUtils,
@@ -105,7 +105,7 @@ function M.open(uri)
     return M.float { style = '', file = uri }
   end
 
-  local Config = require('gh-actions.config')
+  local Config = require('pipeline.config')
   local cmd
 
   if Config.options.browser then
@@ -141,7 +141,7 @@ end
 function M.is_nil(value)
   return value == nil
     or value == vim.NIL
-    or require('gh-actions.yaml').is_yaml_nil(value)
+    or require('pipeline.yaml').is_yaml_nil(value)
 end
 
 return M
