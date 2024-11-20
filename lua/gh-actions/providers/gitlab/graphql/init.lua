@@ -96,6 +96,7 @@ function GitlabGraphQLProvider:fetch()
 
     self.store.update_state(function(state)
       state.pipelines = { pipeline }
+      state.latest_run = runs[pipeline.pipeline_id][1]
       state.runs = runs
       state.jobs = jobs
     end)
