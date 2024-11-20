@@ -1,3 +1,4 @@
+local utils = require('gh-actions.utils')
 local Provider = require('gh-actions.providers.provider')
 
 local function git()
@@ -33,6 +34,10 @@ local defaultOptions = {
 local GithubRestProvider = Provider:extend()
 
 function GithubRestProvider.detect()
+  if not utils.file_exists('.github/workflows') then
+    return false
+  end
+
   local server, repo = git().get_current_repository()
 
   if not is_host_allowed(server) then
@@ -76,7 +81,6 @@ function GithubRestProvider:fetch()
 
   gh_api().get_repository_workflow_runs(self.server, self.repo, 100, {
     callback = function(workflow_runs)
-      local utils = require('gh-actions.utils')
       ---@type pipeline.Run[]
       local runs = vim.tbl_map(Mapper.to_run, workflow_runs)
       ---@type pipeline.Run[]
@@ -124,7 +128,6 @@ function GithubRestProvider:dispatch(pipeline)
   end
 
   local store = require('gh-actions.store')
-  local utils = require('gh-actions.utils')
 
   if pipeline then
     local server = store.get_state().server

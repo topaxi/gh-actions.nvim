@@ -10,6 +10,7 @@ local defaultConfig = {
   ---@field github? pipeline.providers.github.rest.Options
   providers = {
     github = {},
+    gitlab = {},
   },
   --- Allowed hosts to fetch data from, github.com is always allowed
   --- @type string[]

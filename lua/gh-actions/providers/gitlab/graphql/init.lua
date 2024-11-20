@@ -1,10 +1,11 @@
+local utils = require('gh-actions.utils')
 local Provider = require('gh-actions.providers.provider')
 
 local function git()
   return require('gh-actions.git')
 end
 
-function glab_api()
+local function glab_api()
   return require('gh-actions.providers.gitlab.graphql._api')
 end
 
@@ -33,6 +34,10 @@ local defaultOptions = {
 local GitlabGraphQLProvider = Provider:extend()
 
 function GitlabGraphQLProvider.detect()
+  if not utils.file_exists('.gitlab-ci.yml') then
+    return false
+  end
+
   local server, repo = git().get_current_repository()
 
   if not is_host_allowed(server) then
@@ -58,7 +63,6 @@ function GitlabGraphQLProvider:init(opts)
 end
 
 function GitlabGraphQLProvider:fetch()
-  local utils = require('gh-actions.utils')
   local Mapper = require('gh-actions.providers.gitlab.graphql._mapper')
 
   glab_api().get_project_pipelines(self.repo, 10, function(response)
@@ -105,7 +109,6 @@ function GitlabGraphQLProvider:dispatch(pipeline)
   end
 
   local store = require('gh-actions.store')
-  local utils = require('gh-actions.utils')
 
   if pipeline then
     local server = store.get_state().server
