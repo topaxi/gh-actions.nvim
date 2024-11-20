@@ -58,10 +58,11 @@ end
 ---@param store { get_state: fun(): GhActionsState }
 ---@return GhActionsRender
 function GhActionsRender.new(store)
-  local self = setmetatable(Buffer.new { indent = Config.options.indent }, {
+  local self = setmetatable({}, {
     __index = GhActionsRender,
   })
-  ---@cast self GhActionsRender
+
+  Buffer.init(self, { indent = Config.options.indent })
 
   self.store = store
 

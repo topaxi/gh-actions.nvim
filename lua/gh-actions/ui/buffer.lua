@@ -13,16 +13,21 @@ local Buffer = {
 
 ---@param opts? { indent?: integer }
 function Buffer.new(opts)
-  opts = opts or {}
-
   local self = setmetatable({}, {
     __index = Buffer,
   })
 
-  self._lines = {}
-  self._indent = opts.indent or 2
+  self:init(opts)
 
   return self
+end
+
+---@param opts? { indent?: integer }
+function Buffer:init(opts)
+  opts = opts or {}
+
+  self._lines = {}
+  self._indent = opts.indent or 2
 end
 
 ---@param line Line
