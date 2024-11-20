@@ -62,15 +62,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gh-actions-rust"
-version = "0.0.1"
-dependencies = [
- "mlua",
- "serde",
- "serde_yaml",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,6 +184,15 @@ dependencies = [
  "redox_syscall",
  "smallvec",
  "windows-targets",
+]
+
+[[package]]
+name = "pipeline_native"
+version = "0.0.1"
+dependencies = [
+ "mlua",
+ "serde",
+ "serde_yaml",
 ]
 
 [[package]]

@@ -1,9 +1,9 @@
-local store = require('gh-actions.store')
+local store = require('pipeline.store')
 
 local M = {
   ---@type NuiSplit
   split = nil,
-  ---@type GhActionsRender
+  ---@type pipeline.Render
   renderer = nil,
 }
 
@@ -11,7 +11,7 @@ local function get_cursor_line(line)
   return line or vim.api.nvim_win_get_cursor(M.split.winid)[1]
 end
 
----@param kind GhActionsRenderLocationKind
+---@param kind pipeline.RenderLocationKind
 ---@param line? integer
 local function get_location(kind, line)
   line = get_cursor_line(line)
@@ -63,8 +63,8 @@ end
 
 function M.setup()
   local Split = require('nui.split')
-  local Config = require('gh-actions.config')
-  local Render = require('gh-actions.ui.render')
+  local Config = require('pipeline.config')
+  local Render = require('pipeline.ui.render')
 
   M.split = Split(Config.options.split)
   M.renderer = Render.new(store)

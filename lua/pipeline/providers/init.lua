@@ -7,7 +7,7 @@ local providers = {
 ---@field github pipeline.providers.github.rest.Provider
 local M = setmetatable({}, {
   __index = function(_, key)
-    return require('gh-actions.providers.' .. providers[key])
+    return require('pipeline.providers.' .. providers[key])
   end,
 })
 

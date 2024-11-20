@@ -1,4 +1,4 @@
----@meta gh_actions_native.yaml
+---@meta pipeline_native.yaml
 --# selene: allow(unused_variable)
 
 local M = {}

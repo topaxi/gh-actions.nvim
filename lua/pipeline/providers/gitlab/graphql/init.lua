@@ -1,12 +1,12 @@
-local utils = require('gh-actions.utils')
-local Provider = require('gh-actions.providers.provider')
+local utils = require('pipeline.utils')
+local Provider = require('pipeline.providers.provider')
 
 local function git()
-  return require('gh-actions.git')
+  return require('pipeline.git')
 end
 
 local function glab_api()
-  return require('gh-actions.providers.gitlab.graphql._api')
+  return require('pipeline.providers.gitlab.graphql._api')
 end
 
 ---@class pipeline.providers.gitlab.graphql.Options
@@ -26,7 +26,7 @@ function GitlabGraphQLProvider.detect()
     return false
   end
 
-  local config = require('gh-actions.config')
+  local config = require('pipeline.config')
   local server, repo = git().get_current_repository()
 
   if not config.is_host_allowed(server) then
@@ -52,7 +52,7 @@ function GitlabGraphQLProvider:init(opts)
 end
 
 function GitlabGraphQLProvider:fetch()
-  local Mapper = require('gh-actions.providers.gitlab.graphql._mapper')
+  local Mapper = require('pipeline.providers.gitlab.graphql._mapper')
 
   glab_api().get_project_pipelines(self.repo, 10, function(response)
     if
@@ -98,17 +98,11 @@ function GitlabGraphQLProvider:dispatch(pipeline)
     return
   end
 
-  local store = require('gh-actions.store')
-
   if pipeline then
-    local server = store.get_state().server
-    local repo = store.get_state().repo
-
-    local default_branch = require('gh-actions.git').get_default_branch()
-    local ci_config =
-      require('gh-actions.yaml').read_yaml_file(pipeline.meta.ci_config_path)
-
-    -- TODO
+    vim.notify(
+      'Gitlab Pipeline dispatch is not yet implemented',
+      vim.log.levels.INFO
+    )
   end
 end
 

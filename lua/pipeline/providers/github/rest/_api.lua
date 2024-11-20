@@ -1,5 +1,5 @@
 function gh_utils()
-  return require('gh-actions.providers.github.utils')
+  return require('pipeline.providers.github.utils')
 end
 
 ---@class pipeline.providers.github.rest.Api

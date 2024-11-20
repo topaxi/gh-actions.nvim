@@ -5,7 +5,7 @@ function M.check()
 
   health.start('Checking ability to parse yaml files')
 
-  local has_native_module = pcall(require, 'gh_actions_native.yaml')
+  local has_native_module = pcall(require, 'pipeline_native.yaml')
 
   if has_native_module then
     health.ok('Found native module')
@@ -27,8 +27,8 @@ function M.check()
     health.error('No yaml parser found')
   end
 
-  require('gh-actions.providers.github.rest.health').check()
-  require('gh-actions.providers.gitlab.graphql.health').check()
+  require('pipeline.providers.github.rest.health').check()
+  require('pipeline.providers.gitlab.graphql.health').check()
 end
 
 return M

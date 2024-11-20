@@ -45,7 +45,7 @@ end
 function M.get_workflow_config(path)
   path = vim.fn.expand(path)
 
-  local utils = require('gh-actions.utils')
+  local utils = require('pipeline.utils')
   local workflow_yaml = utils.read_file(path) or ''
   local config = {
     on = {

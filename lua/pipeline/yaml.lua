@@ -1,5 +1,5 @@
-local utils = require('gh-actions.utils')
-local has_native_module, native_yaml = pcall(require, 'gh_actions_native.yaml')
+local utils = require('pipeline.utils')
+local has_native_module, native_yaml = pcall(require, 'pipeline_native.yaml')
 
 local M = {}
 

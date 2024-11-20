@@ -41,37 +41,37 @@ local defaultConfig = {
   ---@class pipeline.config.Highlights
   highlights = {
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconSuccess = { link = 'LspDiagnosticsVirtualTextHint' },
+    PipelineRunIconSuccess = { link = 'LspDiagnosticsVirtualTextHint' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconFailure = { link = 'LspDiagnosticsVirtualTextError' },
+    PipelineRunIconFailure = { link = 'LspDiagnosticsVirtualTextError' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconStartup_failure = {
+    PipelineRunIconStartup_failure = {
       link = 'LspDiagnosticsVirtualTextError',
     },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconPending = { link = 'LspDiagnosticsVirtualTextWarning' },
+    PipelineRunIconPending = { link = 'LspDiagnosticsVirtualTextWarning' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconRequested = { link = 'LspDiagnosticsVirtualTextWarning' },
+    PipelineRunIconRequested = { link = 'LspDiagnosticsVirtualTextWarning' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconWaiting = { link = 'LspDiagnosticsVirtualTextWarning' },
+    PipelineRunIconWaiting = { link = 'LspDiagnosticsVirtualTextWarning' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconIn_progress = { link = 'LspDiagnosticsVirtualTextWarning' },
+    PipelineRunIconIn_progress = { link = 'LspDiagnosticsVirtualTextWarning' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconCancelled = { link = 'Comment' },
+    PipelineRunIconCancelled = { link = 'Comment' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunIconSkipped = { link = 'Comment' },
+    PipelineRunIconSkipped = { link = 'Comment' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunCancelled = { link = 'Comment' },
+    PipelineRunCancelled = { link = 'Comment' },
     ---@type vim.api.keyset.highlight
-    GhActionsRunSkipped = { link = 'Comment' },
+    PipelineRunSkipped = { link = 'Comment' },
     ---@type vim.api.keyset.highlight
-    GhActionsJobCancelled = { link = 'Comment' },
+    PipelineJobCancelled = { link = 'Comment' },
     ---@type vim.api.keyset.highlight
-    GhActionsJobSkipped = { link = 'Comment' },
+    PipelineJobSkipped = { link = 'Comment' },
     ---@type vim.api.keyset.highlight
-    GhActionsStepCancelled = { link = 'Comment' },
+    PipelineStepCancelled = { link = 'Comment' },
     ---@type vim.api.keyset.highlight
-    GhActionsStepSkipped = { link = 'Comment' },
+    PipelineStepSkipped = { link = 'Comment' },
   },
   ---@type nui_split_options
   split = {

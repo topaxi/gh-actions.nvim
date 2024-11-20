@@ -3,18 +3,18 @@
 all: build copy
 
 clean:
-	rm -rf ./lua/gh_actions_native/yaml.so ./lua/gh_actions_native/deps
+	rm -rf ./lua/pipeline_native/yaml.so ./lua/pipeline_native/deps
 
 depsdir:
-	mkdir -p ./lua/gh_actions_native/deps
+	mkdir -p ./lua/pipeline_native/deps
 
 build:
 	cargo build --release
 
 copy: clean depsdir
-	cp ./target/release/libgh_actions_rust.dylib ./lua/gh_actions_native/yaml.so || true
-	cp ./target/release/libgh_actions_rust.so ./lua/gh_actions_native/yaml.so || true
-	cp ./target/release/deps/*.rlib ./lua/gh_actions_native/deps/
+	cp ./target/release/libpipeline_rust.dylib ./lua/pipeline_native/yaml.so || true
+	cp ./target/release/libpipeline_rust.so ./lua/pipeline_native/yaml.so || true
+	cp ./target/release/deps/*.rlib ./lua/pipeline_native/deps/
 
 plugin_dir := ./.tests/site/pack/deps/start
 plugins := $(plugin_dir)/plenary.nvim $(plugin_dir)/nui.nvim

@@ -9,7 +9,7 @@ fn yaml_to_lua(lua: &Lua, yamlstr: String) -> LuaResult<mlua::Value> {
 }
 
 #[mlua::lua_module]
-fn gh_actions_native_yaml(lua: &Lua) -> LuaResult<LuaTable> {
+fn pipeline_native_yaml(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
 
     exports.set("NIL", lua.null())?;

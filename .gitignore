@@ -1,5 +1,5 @@
-lua/gh_actions_native/deps
-lua/gh_actions_native/yaml.so
+lua/pipeline_native/deps
+lua/pipeline_native/yaml.so
 
 target
 

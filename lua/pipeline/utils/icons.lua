@@ -1,5 +1,5 @@
 local function Config()
-  return require('gh-actions.config')
+  return require('pipeline.config')
 end
 
 local M = {}

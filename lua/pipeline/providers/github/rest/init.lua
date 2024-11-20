@@ -1,12 +1,12 @@
-local utils = require('gh-actions.utils')
-local Provider = require('gh-actions.providers.provider')
+local utils = require('pipeline.utils')
+local Provider = require('pipeline.providers.provider')
 
 local function git()
-  return require('gh-actions.git')
+  return require('pipeline.git')
 end
 
 local function gh_api()
-  return require('gh-actions.providers.github.rest._api')
+  return require('pipeline.providers.github.rest._api')
 end
 
 ---@class pipeline.providers.github.rest.Options
@@ -26,7 +26,7 @@ function GithubRestProvider.detect()
     return false
   end
 
-  local config = require('gh-actions.config')
+  local config = require('pipeline.config')
   local server, repo = git().get_current_repository()
 
   if not config.is_host_allowed(server) then
@@ -58,7 +58,7 @@ end
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
 function GithubRestProvider:fetch()
-  local Mapper = require('gh-actions.providers.github.rest._mapper')
+  local Mapper = require('pipeline.providers.github.rest._mapper')
 
   gh_api().get_workflows(self.server, self.repo, {
     callback = function(workflows)
@@ -116,7 +116,7 @@ function GithubRestProvider:dispatch(pipeline)
     return
   end
 
-  local store = require('gh-actions.store')
+  local store = require('pipeline.store')
 
   if pipeline then
     local server = store.get_state().server
@@ -124,10 +124,10 @@ function GithubRestProvider:dispatch(pipeline)
 
     -- TODO should we get current ref instead or show an input with the
     --      default branch or current ref preselected?
-    local default_branch = require('gh-actions.git').get_default_branch()
+    local default_branch = require('pipeline.git').get_default_branch()
     ---@type pipeline.providers.github.WorkflowDef|nil
     local workflow_config =
-      require('gh-actions.yaml').read_yaml_file(pipeline.meta.workflow_path)
+      require('pipeline.yaml').read_yaml_file(pipeline.meta.workflow_path)
 
     if not workflow_config or not workflow_config.on.workflow_dispatch then
       return
@@ -169,7 +169,7 @@ function GithubRestProvider:dispatch(pipeline)
                   {
                     callback = function(workflow_runs)
                       local Mapper =
-                        require('gh-actions.providers.github.rest._mapper')
+                        require('pipeline.providers.github.rest._mapper')
                       local runs = vim.tbl_map(Mapper.to_run, workflow_runs)
 
                       store.update_state(function(state)
@@ -212,7 +212,7 @@ function GithubRestProvider:dispatch(pipeline)
       local prompt = string.format('%s: ', input.description or name)
 
       if input.type == 'choice' then
-        local question = require('gh-actions.ui.components.select') {
+        local question = require('pipeline.ui.components.select') {
           prompt = prompt,
           title = pipeline.name,
           options = input.options,
@@ -228,7 +228,7 @@ function GithubRestProvider:dispatch(pipeline)
 
         table.insert(questions, question)
       else
-        local question = require('gh-actions.ui.components.input') {
+        local question = require('pipeline.ui.components.input') {
           prompt = prompt,
           title = pipeline.name,
           default_value = input.default,

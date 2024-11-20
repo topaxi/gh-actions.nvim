@@ -25,7 +25,7 @@
 
 ---@class pipeline.Provider
 ---@field protected config pipeline.Config
----@field protected store GhActionsStore
+---@field protected store pipeline.Store
 ---@field private listener_count integer
 local Provider = {}
 
@@ -44,7 +44,7 @@ end
 
 ---@generic T: pipeline.Provider
 ---@param config pipeline.Config
----@param store GhActionsStore
+---@param store pipeline.Store
 ---@param opts? table
 ---@return self
 function Provider:new(config, store, opts)

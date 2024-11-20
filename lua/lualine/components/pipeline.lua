@@ -6,7 +6,7 @@ local Component = require('lualine.component'):extend()
 local default_options = {
   icon = '',
   ---@param component pipeline.lualine.Component
-  ---@param state GhActionsState
+  ---@param state pipeline.State
   ---@return string
   format = function(component, state)
     local latest_run = state.latest_run
@@ -21,7 +21,7 @@ local default_options = {
   end,
 
   on_click = function()
-    require('gh-actions').toggle()
+    require('pipeline').toggle()
   end,
 }
 
@@ -32,16 +32,16 @@ function Component:init(options)
 
   Component.super.init(self, self.options)
 
-  self.store = require('gh-actions.store')
-  self.icons = require('gh-actions.utils.icons')
+  self.store = require('pipeline.store')
+  self.icons = require('pipeline.utils.icons')
 
-  local server, repo = require('gh-actions.git').get_current_repository()
+  local server, repo = require('pipeline.git').get_current_repository()
 
   if not server or not repo then
     return
   end
 
-  require('gh-actions').start_polling()
+  require('pipeline').start_polling()
 
   self.store.on_update(function()
     require('lualine').refresh()

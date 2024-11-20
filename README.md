@@ -3,7 +3,7 @@
 The pipeline.nvim plugin for Neovim allows developers to easily manage and dispatch their CI/CD Pipelines, like GitHub Actions or Gitlab CI, directly from within the editor.
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/213788/234685256-e915dc9c-1d79-4d64-b771-be1f736a203b.png" alt="Screenshot of gh-actions">
+  <img src="https://user-images.githubusercontent.com/213788/234685256-e915dc9c-1d79-4d64-b771-be1f736a203b.png" alt="Screenshot of pipeline.nvim">
 </p>
 
 ## Features
@@ -61,15 +61,15 @@ The plugin interacts with Gitlab via the `glab` cli, all that is needed is being
 
 ### Commands
 
-- `:Pipeline` or `:Pipeline toggle` toggles the `gh-actions` split
-- `:Pipeline open` opens the `gh-actions` split
-- `:Pipeline close` closes the `gh-actions` split
+- `:Pipeline` or `:Pipeline toggle` toggles the `pipeline.nvim` split
+- `:Pipeline open` opens the `pipeline.nvim` split
+- `:Pipeline close` closes the `pipeline.nvim` split
 
 ### Keybindings
 
 The following keybindings are provided by the plugin:
 
-- `q` - closes the `gh-actions` the split
+- `q` - closes the `pipeline.nvim` the split
 - `gp` - open the pipeline below the cursor on GitHub
 - `gr` - open the run below the cursor on GitHub
 - `gj` - open the job of the workflow run below the cursor on GitHub
@@ -77,7 +77,7 @@ The following keybindings are provided by the plugin:
 
 ### Options
 
-The default options (as defined in [lua/config.lua](./blob/main/lua/gh-actions/config.lua))
+The default options (as defined in [lua/config.lua](./blob/main/lua/pipeline/config.lua))
 
 ```lua
 {

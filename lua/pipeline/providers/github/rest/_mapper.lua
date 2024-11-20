@@ -4,8 +4,8 @@ local M = {}
 ---By default the workflow.html_url points to the workflow definition file.
 ---We want to jump to the UI of all the workflow runs instead.
 ---Example:
----  input: https://github.com/topaxi/gh-actions.nvim/blob/main/.github/workflows/dispatch-echo.yaml
----  output: https://github.com/topaxi/gh-actions.nvim/actions/workflows/dispatch-echo.yaml
+---  input: https://github.com/topaxi/pipeline.nvim/blob/main/.github/workflows/dispatch-echo.yaml
+---  output: https://github.com/topaxi/pipeline.nvim/actions/workflows/dispatch-echo.yaml
 ---@param workflow GhWorkflow
 local function workflow_url(workflow)
   return workflow.html_url:gsub('blob/main/%.github', 'actions')

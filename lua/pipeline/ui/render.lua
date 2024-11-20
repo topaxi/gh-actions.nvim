@@ -1,25 +1,25 @@
-local Config = require('gh-actions.config')
-local Buffer = require('gh-actions.ui.buffer')
-local utils = require('gh-actions.utils')
+local Config = require('pipeline.config')
+local Buffer = require('pipeline.ui.buffer')
+local utils = require('pipeline.utils')
 
 ---TODO: Shade background like https://github.com/akinsho/toggleterm.nvim/blob/2e477f7ee8ee8229ff3158e3018a067797b9cd38/lua/toggleterm/colors.lua
 
----@alias GhActionsRenderLocationKind 'pipeline'|'run'|'job'|'step'
+---@alias pipeline.RenderLocationKind 'pipeline'|'run'|'job'|'step'
 
----@class GhActionsRenderLocation
+---@class pipeline.RenderLocation
 ---@field value any
----@field kind GhActionsRenderLocationKind
+---@field kind pipeline.RenderLocationKind
 ---@field from? integer
 ---@field to? integer
 
----@class GhActionsRender:Buffer
----@field store { get_state: fun(): GhActionsState }
----@field locations GhActionsRenderLocation[]
-local GhActionsRender = {
+---@class pipeline.Render:Buffer
+---@field store { get_state: fun(): pipeline.State }
+---@field locations pipeline.RenderLocation[]
+local PipelineRender = {
   locations = {},
 }
 
-setmetatable(GhActionsRender, { __index = Buffer })
+setmetatable(PipelineRender, { __index = Buffer })
 
 ---@param run { status: string, conclusion: string }
 ---@return string
@@ -45,21 +45,21 @@ local function get_status_highlight(run, prefix)
   end
 
   if run.status == 'completed' then
-    return 'GhActions'
+    return 'Pipeline'
       .. utils.string.upper_first(prefix)
       .. utils.string.upper_first(run.conclusion)
   end
 
-  return 'GhActions'
+  return 'Pipeline'
     .. utils.string.upper_first(prefix)
     .. utils.string.upper_first(run.status)
 end
 
----@param store { get_state: fun(): GhActionsState }
----@return GhActionsRender
-function GhActionsRender.new(store)
+---@param store { get_state: fun(): pipeline.State }
+---@return pipeline.Render
+function PipelineRender.new(store)
   local self = setmetatable({}, {
-    __index = GhActionsRender,
+    __index = PipelineRender,
   })
 
   Buffer.init(self, { indent = Config.options.indent })
@@ -70,7 +70,7 @@ function GhActionsRender.new(store)
 end
 
 ---@param bufnr integer
-function GhActionsRender:render(bufnr)
+function PipelineRender:render(bufnr)
   self._lines = {}
   self.locations = {}
 
@@ -84,23 +84,23 @@ function GhActionsRender:render(bufnr)
 end
 
 --- Render title of the split window
----@param state GhActionsState
-function GhActionsRender:title(state)
+---@param state pipeline.State
+function PipelineRender:title(state)
   self:append(state.title):nl():nl()
 end
 
 --- Render each pipeline
----@param state GhActionsState
-function GhActionsRender:pipelines(state)
+---@param state pipeline.State
+function PipelineRender:pipelines(state)
   for _, pipeline in ipairs(state.pipelines) do
     self:pipeline(state, pipeline, state.runs[pipeline.pipeline_id] or {})
   end
 end
 
----@param state GhActionsState
+---@param state pipeline.State
 ---@param pipeline pipeline.Pipeline
 ---@param runs pipeline.Run[]
-function GhActionsRender:pipeline(state, pipeline, runs)
+function PipelineRender:pipeline(state, pipeline, runs)
   self:with_location({ kind = 'pipeline', value = pipeline }, function()
     local runs_n = math.min(5, #runs)
 
@@ -128,9 +128,9 @@ function GhActionsRender:pipeline(state, pipeline, runs)
   end
 end
 
----@param state GhActionsState
+---@param state pipeline.State
 ---@param run pipeline.Run
-function GhActionsRender:run(state, run)
+function PipelineRender:run(state, run)
   self:with_location({ kind = 'run', value = run }, function()
     self
       :status_icon(run, { indent = 1 })
@@ -146,9 +146,9 @@ function GhActionsRender:run(state, run)
   end)
 end
 
----@param state GhActionsState
+---@param state pipeline.State
 ---@param job pipeline.Job
-function GhActionsRender:job(state, job)
+function PipelineRender:job(state, job)
   self:with_location({ kind = 'job', value = job }, function()
     self
       :status_icon(job, { indent = 2 })
@@ -165,7 +165,7 @@ function GhActionsRender:job(state, job)
 end
 
 ---@param step pipeline.Step
-function GhActionsRender:step(step)
+function PipelineRender:step(step)
   self:with_location({ kind = 'step', value = step }, function()
     self
       :status_icon(step, { indent = 3 })
@@ -177,7 +177,7 @@ end
 
 ---@param status { status: string, conclusion: string }
 ---@param opts? { indent?: number | nil }
-function GhActionsRender:status_icon(status, opts)
+function PipelineRender:status_icon(status, opts)
   opts = opts or {}
 
   self:append(
@@ -189,17 +189,17 @@ function GhActionsRender:status_icon(status, opts)
   return self
 end
 
----@param location GhActionsRenderLocation
-function GhActionsRender:append_location(location)
+---@param location pipeline.RenderLocation
+function PipelineRender:append_location(location)
   table.insert(
     self.locations,
     vim.tbl_extend('keep', location, { to = self:get_current_line_nr() - 1 })
   )
 end
 
----@param kind GhActionsRenderLocationKind
+---@param kind pipeline.RenderLocationKind
 ---@param line integer
-function GhActionsRender:get_location(kind, line)
+function PipelineRender:get_location(kind, line)
   for _, loc in ipairs(self.locations) do
     if loc.kind == kind and line >= loc.from and line <= loc.to then
       return loc.value
@@ -207,9 +207,9 @@ function GhActionsRender:get_location(kind, line)
   end
 end
 
----@param location GhActionsRenderLocation
+---@param location pipeline.RenderLocation
 ---@param fn fun()
-function GhActionsRender:with_location(location, fn)
+function PipelineRender:with_location(location, fn)
   local start_line_nr = self:get_current_line_nr()
 
   fn()
@@ -219,4 +219,4 @@ function GhActionsRender:with_location(location, fn)
   )
 end
 
-return GhActionsRender
+return PipelineRender

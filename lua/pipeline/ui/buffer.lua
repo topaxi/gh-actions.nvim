@@ -8,7 +8,7 @@
 ---@field protected _lines Line[]
 ---@field protected _indent number
 local Buffer = {
-  ns = vim.api.nvim_create_namespace('gh-actions'),
+  ns = vim.api.nvim_create_namespace('pipeline.nvim'),
 }
 
 ---@param opts? { indent?: integer }
