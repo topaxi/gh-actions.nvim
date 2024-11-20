@@ -1,11 +1,9 @@
-local Split = require('nui.split')
-local Config = require('gh-actions.config')
 local store = require('gh-actions.store')
-local Render = require('gh-actions.ui.render')
 
 local M = {
   ---@type NuiSplit
   split = nil,
+  ---@type GhActionsRender
   renderer = nil,
 }
 
@@ -13,31 +11,36 @@ local function get_cursor_line(line)
   return line or vim.api.nvim_win_get_cursor(M.split.winid)[1]
 end
 
----TODO: This should be a local function
+---@param kind GhActionsRenderLocationKind
 ---@param line? integer
----@return GhWorkflow|nil
-function M.get_workflow(line)
+local function get_location(kind, line)
   line = get_cursor_line(line)
 
-  return M.renderer:get_location('workflow', line)
+  return M.renderer:get_location(kind, line)
 end
 
----TODO: This should be a local function
 ---@param line? integer
----@return GhWorkflowRun|nil
-function M.get_workflow_run(line)
-  line = get_cursor_line(line)
-
-  return M.renderer:get_location('workflow_run', line)
+---@return pipeline.Pipeline|nil
+function M.get_pipeline(line)
+  return get_location('pipeline', line)
 end
 
----TODO: This should be a local function
 ---@param line? integer
----@return GhWorkflowRunJob|nil
-function M.get_workflow_job(line)
-  line = get_cursor_line(line)
+---@return pipeline.Run|nil
+function M.get_run(line)
+  return get_location('run', line)
+end
 
-  return M.renderer:get_location('workflow_job', line)
+---@param line? integer
+---@return pipeline.Job|nil
+function M.get_job(line)
+  return get_location('job', line)
+end
+
+---@param line? integer
+---@return pipeline.Step|nil
+function M.get_step(line)
+  return get_location('step', line)
 end
 
 local function is_visible()
@@ -59,6 +62,10 @@ function M.render()
 end
 
 function M.setup()
+  local Split = require('nui.split')
+  local Config = require('gh-actions.config')
+  local Render = require('gh-actions.ui.render')
+
   M.split = Split(Config.options.split)
   M.renderer = Render.new(store)
 

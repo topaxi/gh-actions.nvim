@@ -4,9 +4,11 @@ local utils = require('gh-actions.utils')
 
 ---TODO: Shade background like https://github.com/akinsho/toggleterm.nvim/blob/2e477f7ee8ee8229ff3158e3018a067797b9cd38/lua/toggleterm/colors.lua
 
+---@alias GhActionsRenderLocationKind 'pipeline'|'run'|'job'|'step'
+
 ---@class GhActionsRenderLocation
 ---@field value any
----@field kind string
+---@field kind GhActionsRenderLocationKind
 ---@field from? integer
 ---@field to? integer
 
@@ -98,7 +100,7 @@ end
 ---@param pipeline pipeline.Pipeline
 ---@param runs pipeline.Run[]
 function GhActionsRender:pipeline(state, pipeline, runs)
-  self:with_location({ kind = 'workflow', value = pipeline }, function()
+  self:with_location({ kind = 'pipeline', value = pipeline }, function()
     local runs_n = math.min(5, #runs)
 
     self
@@ -128,7 +130,7 @@ end
 ---@param state GhActionsState
 ---@param run pipeline.Run
 function GhActionsRender:run(state, run)
-  self:with_location({ kind = 'workflow_run', value = run }, function()
+  self:with_location({ kind = 'run', value = run }, function()
     self
       :status_icon(run, { indent = 1 })
       :append(' ')
@@ -146,7 +148,7 @@ end
 ---@param state GhActionsState
 ---@param job pipeline.Job
 function GhActionsRender:job(state, job)
-  self:with_location({ kind = 'workflow_job', value = job }, function()
+  self:with_location({ kind = 'job', value = job }, function()
     self
       :status_icon(job, { indent = 2 })
       :append(' ')
@@ -163,7 +165,7 @@ end
 
 ---@param step pipeline.Step
 function GhActionsRender:step(step)
-  self:with_location({ kind = 'workflow_step', value = step }, function()
+  self:with_location({ kind = 'step', value = step }, function()
     self
       :status_icon(step, { indent = 3 })
       :append(' ')
@@ -194,7 +196,7 @@ function GhActionsRender:append_location(location)
   )
 end
 
----@param kind string
+---@param kind GhActionsRenderLocationKind
 ---@param line integer
 function GhActionsRender:get_location(kind, line)
   for _, loc in ipairs(self.locations) do

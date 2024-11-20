@@ -68,157 +68,171 @@ function M.update_workflow_configs(state)
   end
 end
 
-function M.open()
+local function dispatch_run()
   local ui = require('gh-actions.ui')
   local store = require('gh-actions.store')
   local utils = require('gh-actions.utils')
+  local gh_api = require('gh-actions.providers.github.rest._api')
+  local pipeline = ui.get_pipeline()
+
+  if pipeline then
+    local server = store.get_state().server
+    local repo = store.get_state().repo
+
+    -- TODO should we get current ref instead or show an input with the
+    --      default branch or current ref preselected?
+    local default_branch = require('gh-actions.git').get_default_branch()
+    local workflow_config =
+      require('gh-actions.yaml').read_yaml_file(pipeline.meta.workflow_path)
+
+    if not workflow_config or not workflow_config.on.workflow_dispatch then
+      return
+    end
+
+    local inputs = {}
+
+    if not utils.is_nil(workflow_config.on.workflow_dispatch) then
+      inputs = workflow_config.on.workflow_dispatch.inputs
+    end
+
+    local questions = {}
+    local i = 0
+    local input_values = vim.empty_dict()
+
+    -- TODO: Would be great to be able to cycle back to previous inputs
+    local function ask_next()
+      i = i + 1
+
+      if #questions > 0 and i <= #questions then
+        questions[i]:mount()
+      else
+        gh_api.dispatch_workflow(
+          server,
+          repo,
+          pipeline.pipeline_id,
+          default_branch,
+          {
+            body = { inputs = input_values or {} },
+            callback = function(_res)
+              utils.delay(2000, function()
+                gh_api.get_workflow_runs(
+                  server,
+                  repo,
+                  pipeline.pipeline_id,
+                  5,
+                  {
+                    callback = function(workflow_runs)
+                      store.update_state(function(state)
+                        state.runs = utils.uniq(function(run)
+                          return run.id
+                        end, {
+                          unpack(workflow_runs),
+                          unpack(state.runs),
+                        })
+                      end)
+                    end,
+                  }
+                )
+              end)
+            end,
+          }
+        )
+
+        if #questions == 0 then
+          vim.notify(string.format('Dispatched %s', pipeline.name))
+        else
+          -- TODO format by iterating instead of inspect
+          vim.notify(
+            string.format(
+              'Dispatched %s with %s',
+              pipeline.name,
+              vim.inspect(input_values)
+            )
+          )
+        end
+      end
+    end
+
+    for name, input in pairs(inputs) do
+      local prompt = string.format('%s: ', input.description or name)
+
+      if input.type == 'choice' then
+        local question = require('gh-actions.ui.components.select') {
+          prompt = prompt,
+          title = pipeline.name,
+          options = input.options,
+          on_submit = function(value)
+            input_values[name] = value.text
+            ask_next()
+          end,
+        }
+
+        question:on('BufLeave', function()
+          question:unmount()
+        end)
+
+        table.insert(questions, question)
+      else
+        local question = require('gh-actions.ui.components.input') {
+          prompt = prompt,
+          title = pipeline.name,
+          default_value = input.default,
+          on_submit = function(value)
+            input_values[name] = value
+            ask_next()
+          end,
+        }
+
+        question:on('BufLeave', function()
+          question:unmount()
+        end)
+
+        table.insert(questions, question)
+      end
+    end
+
+    ask_next()
+  end
+end
+
+---@param pipeline_object pipeline.PipelineObject|nil
+local function open_pipeline_url(pipeline_object)
+  if not pipeline_object then
+    return
+  end
+
+  if type(pipeline_object.url) ~= 'string' or pipeline_object.url == '' then
+    return
+  end
+
+  require('gh-actions.utils').open(pipeline_object.url)
+end
+
+function M.open()
+  local ui = require('gh-actions.ui')
+  local store = require('gh-actions.store')
 
   ui.open()
   ui.split:map('n', 'q', M.close, { noremap = true })
 
-  ui.split:map('n', 'gw', function()
-    local workflow = ui.get_workflow()
-
-    if workflow then
-      utils.open(workflow.html_url)
-
-      return
-    end
+  ui.split:map('n', { 'gp', 'gw' }, function()
+    open_pipeline_url(ui.get_pipeline())
   end, { noremap = true })
 
   ui.split:map('n', 'gr', function()
-    local workflow_run = ui.get_workflow_run()
-
-    if workflow_run then
-      utils.open(workflow_run.html_url)
-
-      return
-    end
+    open_pipeline_url(ui.get_run())
   end, { noremap = true })
 
   ui.split:map('n', 'gj', function()
-    local workflow_job = ui.get_workflow_job()
+    open_pipeline_url(ui.get_job())
+  end, { noremap = true })
 
-    if workflow_job then
-      utils.open(workflow_job.html_url)
-
-      return
-    end
+  ui.split:map('n', 'gs', function()
+    open_pipeline_url(ui.get_step())
   end, { noremap = true })
 
   -- TODO Move this into its own module, ui?
-  ui.split:map('n', 'd', function()
-    local gh_api = require('gh-actions.providers.github.rest._api')
-    local workflow = ui.get_workflow()
-
-    if workflow then
-      local server = store.get_state().server
-      local repo = store.get_state().repo
-
-      -- TODO should we get current ref instead or show an input with the
-      --      default branch or current ref preselected?
-      local default_branch = require('gh-actions.git').get_default_branch()
-      local workflow_config =
-        require('gh-actions.yaml').read_yaml_file(workflow.path)
-
-      if not workflow_config or not workflow_config.on.workflow_dispatch then
-        return
-      end
-
-      local inputs = {}
-
-      if not utils.is_nil(workflow_config.on.workflow_dispatch) then
-        inputs = workflow_config.on.workflow_dispatch.inputs
-      end
-
-      local event = require('nui.utils.autocmd').event
-      local questions = {}
-      local i = 0
-      local input_values = vim.empty_dict()
-
-      -- TODO: Would be great to be able to cycle back to previous inputs
-      local function ask_next()
-        i = i + 1
-
-        if #questions > 0 and i <= #questions then
-          questions[i]:mount()
-        else
-          gh_api.dispatch_workflow(server, repo, workflow.id, default_branch, {
-            body = { inputs = input_values or {} },
-            callback = function(_res)
-              utils.delay(2000, function()
-                gh_api.get_workflow_runs(server, repo, workflow.id, 5, {
-                  callback = function(workflow_runs)
-                    store.update_state(function(state)
-                      state.runs = utils.uniq(function(run)
-                        return run.id
-                      end, {
-                        unpack(workflow_runs),
-                        unpack(state.runs),
-                      })
-                    end)
-                  end,
-                })
-              end)
-            end,
-          })
-
-          if #questions == 0 then
-            vim.notify(string.format('Dispatched %s', workflow.name))
-          else
-            -- TODO format by iterating instead of inspect
-            vim.notify(
-              string.format(
-                'Dispatched %s with %s',
-                workflow.name,
-                vim.inspect(input_values)
-              )
-            )
-          end
-        end
-      end
-
-      for name, input in pairs(inputs) do
-        local prompt = string.format('%s: ', input.description or name)
-
-        if input.type == 'choice' then
-          local question = require('gh-actions.ui.components.select') {
-            prompt = prompt,
-            title = workflow.name,
-            options = input.options,
-            on_submit = function(value)
-              input_values[name] = value.text
-              ask_next()
-            end,
-          }
-
-          question:on(event.BufLeave, function()
-            question:unmount()
-          end)
-
-          table.insert(questions, question)
-        else
-          local question = require('gh-actions.ui.components.input') {
-            prompt = prompt,
-            title = workflow.name,
-            default_value = input.default,
-            on_submit = function(value)
-              input_values[name] = value
-              ask_next()
-            end,
-          }
-
-          question:on(event.BufLeave, function()
-            question:unmount()
-          end)
-
-          table.insert(questions, question)
-        end
-      end
-
-      ask_next()
-    end
-  end, { noremap = true })
+  ui.split:map('n', 'd', dispatch_run, { noremap = true })
 
   M.start_polling()
 

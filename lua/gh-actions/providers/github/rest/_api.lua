@@ -150,7 +150,7 @@ end
 
 ---@param server string
 ---@param repo string
----@param workflow_id integer
+---@param workflow_id integer|string
 ---@param per_page? integer
 ---@param opts? { callback?: fun(workflow_runs: GhWorkflowRun[]): any }
 function M.get_workflow_runs(server, repo, workflow_id, per_page, opts)
@@ -167,7 +167,7 @@ end
 
 ---@param server string
 ---@param repo string
----@param workflow_id integer
+---@param workflow_id integer|string
 ---@param ref string
 ---@param opts? table
 function M.dispatch_workflow(server, repo, workflow_id, ref, opts)
