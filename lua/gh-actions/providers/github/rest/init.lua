@@ -77,11 +77,12 @@ function GithubRestProvider:fetch()
   gh_api().get_repository_workflow_runs(self.server, self.repo, 100, {
     callback = function(workflow_runs)
       local utils = require('gh-actions.utils')
-      local old_workflow_runs = self.store.get_state().runs
+      ---@type pipeline.Run[]
+      local runs = vim.tbl_map(Mapper.to_run, workflow_runs)
+      ---@type pipeline.Run[]
+      local old_runs = vim.iter(self.store.get_state().runs):flatten():totable()
 
       self.store.update_state(function(state)
-        local runs = vim.tbl_map(Mapper.to_run, workflow_runs)
-
         state.latest_run = runs[1]
         state.runs = utils.group_by(function(run)
           return run.pipeline_id
@@ -94,7 +95,7 @@ function GithubRestProvider:fetch()
         end,
         vim.tbl_filter(function(run)
           return run.status ~= 'completed' and run.status ~= 'skipped'
-        end, { unpack(old_workflow_runs), unpack(workflow_runs) })
+        end, { unpack(runs), unpack(old_runs) })
       )
 
       for _, run in ipairs(running_workflows) do

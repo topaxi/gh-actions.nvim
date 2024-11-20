@@ -122,13 +122,22 @@ local function dispatch_run()
                   5,
                   {
                     callback = function(workflow_runs)
+                      local Mapper =
+                        require('gh-actions.providers.github.rest._mapper')
+                      local runs = vim.tbl_map(Mapper.to_run, workflow_runs)
+
                       store.update_state(function(state)
-                        state.runs = utils.uniq(function(run)
-                          return run.id
-                        end, {
-                          unpack(workflow_runs),
-                          unpack(state.runs),
-                        })
+                        state.runs = utils.group_by(
+                          function(run)
+                            return run.pipeline_id
+                          end,
+                          utils.uniq(function(run)
+                            return run.run_id
+                          end, {
+                            unpack(runs),
+                            unpack(vim.iter(state.runs):flatten():totable()),
+                          })
+                        )
                       end)
                     end,
                   }

@@ -21,6 +21,7 @@ local initialState = {
   latest_run = nil,
   runs = {},
   jobs = {},
+  steps = {},
   workflow_configs = {},
 }
 
