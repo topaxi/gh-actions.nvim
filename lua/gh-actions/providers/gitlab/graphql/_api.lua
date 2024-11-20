@@ -1,41 +1,41 @@
-local utils = require('gh-actions.utils')
 local M = {}
-local query_cache = {}
 
-local function is_win()
-  return package.config:sub(1, 1) == '\\'
-end
-
-local function get_path_separator()
-  if is_win() then
-    return '\\'
-  end
-  return '/'
-end
-
---- There has to be a better way, no?
-local function script_path()
-  local str = debug.getinfo(2, 'S').source:sub(2)
-  if is_win() then
-    str = str:gsub('/', '\\')
-  end
-  return str:match('(.*' .. get_path_separator() .. ')')
-end
-
-function get_query(query_name)
-  if not query_cache[query_name] then
-    local current_dirname = script_path()
-    query_cache[query_name] = utils.read_file(
-      current_dirname
-        .. 'queries'
-        .. get_path_separator()
-        .. query_name
-        .. '.graphql'
-    )
-  end
-
-  return query_cache[query_name]
-end
+local pipelines_with_jobs_query = [[
+  query ($repo: ID!, $limit: Int!) {
+    project(fullPath: $repo) {
+      id
+      ciConfigPathOrDefault
+      pipelines(first: $limit) {
+        nodes {
+          id
+          name
+          commit {
+            message
+          }
+          path
+          cancelable
+          retryable
+          createdAt
+          status
+          jobs {
+            nodes {
+              id
+              name
+              status
+              manualJob
+              retryable
+              cancelable
+              stage {
+                name
+              }
+              webPath
+            }
+          }
+        }
+      }
+    }
+  }
+]]
 
 ---@param job Job
 local function create_job(job)
@@ -97,8 +97,8 @@ end
 ---@param limit number
 ---@param callback fun(response: pipeline.providers.gitlab.graphql.QueryResponse)
 function M.get_project_pipelines(repo, limit, callback)
-  local query = get_query('pipelines_with_jobs')
-  local query_job = glab_graphql(query, { repo = repo, limit = limit })
+  local query_job =
+    glab_graphql(pipelines_with_jobs_query, { repo = repo, limit = limit })
 
   query_job:start()
   query_job:after(function(job)
