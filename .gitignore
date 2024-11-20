@@ -2,3 +2,5 @@ lua/gh_actions_native/deps
 lua/gh_actions_native/yaml.so
 
 target
+
+.tests
