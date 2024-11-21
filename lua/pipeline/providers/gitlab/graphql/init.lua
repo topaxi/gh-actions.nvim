@@ -26,6 +26,10 @@ function GitlabGraphQLProvider.detect()
     return false
   end
 
+  if vim.fn.executable('glab') == 0 then
+    return false
+  end
+
   local config = require('pipeline.config')
   local server, repo = git().get_current_repository()
 

@@ -5,7 +5,7 @@ function M.check()
 
   health.start('Gitlab GraphQL provider')
 
-  if vim.fn.executable('glab') then
+  if vim.fn.executable('glab') == 1 then
     health.ok('Found glab cli')
   else
     health.error('glab cli not found')
