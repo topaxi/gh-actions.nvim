@@ -12,8 +12,8 @@ build:
 	cargo build --release
 
 copy: clean depsdir
-	cp ./target/release/libpipeline_rust.dylib ./lua/pipeline_native/yaml.so || true
-	cp ./target/release/libpipeline_rust.so ./lua/pipeline_native/yaml.so || true
+	cp ./target/release/libpipeline_native.dylib ./lua/pipeline_native/yaml.so || true
+	cp ./target/release/libpipeline_native.so ./lua/pipeline_native/yaml.so || true
 	cp ./target/release/deps/*.rlib ./lua/pipeline_native/deps/
 
 plugin_dir := ./.tests/site/pack/deps/start
