@@ -13,13 +13,19 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          # super-linter needs the full git history to get the
+          # list of files that changed across commits
+          fetch-depth: 0
 
       - name: Lint Code Base
-        uses: github/super-linter/slim@v4
+        uses: github/super-linter@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: /
+          VALIDATE_CHECKOV: false
+          VALIDATE_RUST_CLIPPY: false # super-linter uses rustc 1.78.0 but mlua requires 1.79.0
           VALIDATE_JSCPD: false
           VALIDATE_PYTHON_BLACK: false
           JAVASCRIPT_DEFAULT_STYLE: prettier
