@@ -24,6 +24,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: /
+          VALIDATE_CHECKOV: false
+          VALIDATE_RUST_CLIPPY: false # super-linter uses rustc 1.78.0 but mlua requires 1.79.0
           VALIDATE_JSCPD: false
           VALIDATE_PYTHON_BLACK: false
           JAVASCRIPT_DEFAULT_STYLE: prettier
