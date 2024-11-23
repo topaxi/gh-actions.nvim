@@ -159,7 +159,7 @@ function GithubRestProvider:dispatch(pipeline)
           default_branch,
           {
             body = { inputs = input_values or {} },
-            callback = function(_res)
+            callback = function(_err, _res)
               utils.delay(2000, function()
                 gh_api().get_workflow_runs(
                   server,

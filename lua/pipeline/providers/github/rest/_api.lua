@@ -2,12 +2,19 @@ local function gh_utils()
   return require('pipeline.providers.github.utils')
 end
 
+---@alias plenary.curl.Error { message: string, stderr: string, exit: number }
+---@package
+
 ---@class pipeline.providers.github.rest.Api
 local M = {}
 
+---@class pipeline.providers.github.rest.FetchOptions
+---@field method 'get'|'patch'|'post'|'put'|'delete'
+---@field callback fun(err: plenary.curl.Error|nil, response: table|nil)
+
 ---@param server string
 ---@param path string
----@param opts? table
+---@param opts? pipeline.providers.github.rest.FetchOptions
 function M.fetch(server, path, opts)
   if vim.fn.has('nvim-0.11') == 1 then
     vim.validate('server', server, 'string')
@@ -40,6 +47,12 @@ function M.fetch(server, path, opts)
           gh_utils().get_github_token(nil, server)
         ),
       },
+      callback = function(response)
+        opts.callback(nil, response)
+      end,
+      on_error = function(err)
+        opts.callback(err, nil)
+      end,
     })
   )
 end
@@ -70,8 +83,8 @@ function M.get_workflows(server, repo, opts)
     server,
     string.format('/repos/%s/actions/workflows', repo),
     vim.tbl_deep_extend('force', opts, {
-      callback = function(response)
-        if not response then
+      callback = function(err, response)
+        if err or not response then
           return {}
         end
 
@@ -112,10 +125,11 @@ end
 local function process_workflow_runs_response(opts)
   opts = opts or {}
 
+  ---@param err plenary.curl.Error | nil
   ---@param response table
   ---@return GhWorkflowRunsResponse
-  return function(response)
-    if not response then
+  return function(err, response)
+    if err or not response then
       return {}
     end
 
@@ -221,8 +235,8 @@ function M.get_workflow_run_jobs(server, repo, workflow_run_id, per_page, opts)
     server,
     string.format('/repos/%s/actions/runs/%d/jobs', repo, workflow_run_id),
     vim.tbl_deep_extend('force', { query = { per_page = per_page } }, opts, {
-      callback = function(response)
-        if not response then
+      callback = function(err, response)
+        if err or not response then
           return {}
         end
 
