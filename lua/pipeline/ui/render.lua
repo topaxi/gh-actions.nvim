@@ -13,7 +13,7 @@ local utils = require('pipeline.utils')
 ---@field to? integer
 
 ---@class pipeline.Render:Buffer
----@field store { get_state: fun(): pipeline.State }
+---@field store pipeline.ReadonlyStore
 ---@field locations pipeline.RenderLocation[]
 local PipelineRender = {
   locations = {},
@@ -55,7 +55,7 @@ local function get_status_highlight(run, prefix)
     .. utils.string.upper_first(run.status)
 end
 
----@param store { get_state: fun(): pipeline.State }
+---@param store pipeline.ReadonlyStore
 ---@return pipeline.Render
 function PipelineRender.new(store)
   local self = setmetatable({}, {

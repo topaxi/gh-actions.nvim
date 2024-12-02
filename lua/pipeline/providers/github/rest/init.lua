@@ -73,7 +73,10 @@ function GithubRestProvider:fetch()
       ---@type pipeline.Run[]
       local runs = vim.tbl_map(Mapper.to_run, workflow_runs)
       ---@type pipeline.Run[]
-      local old_runs = vim.iter(vim.tbl_values(self.store.get_state().runs)):flatten():totable()
+      local old_runs = vim
+        .iter(vim.tbl_values(self.store.get_state().runs))
+        :flatten()
+        :totable()
 
       self.store.update_state(function(state)
         state.latest_run = runs[1]

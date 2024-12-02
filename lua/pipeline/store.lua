@@ -25,7 +25,10 @@ local initialState = {
   workflow_configs = {},
 }
 
----@class pipeline.Store
+---@class pipeline.ReadonlyStore
+---@field get_state fun(): pipeline.State
+
+---@class pipeline.Store: pipeline.ReadonlyStore
 ---@field package _state pipeline.State
 ---@field package _update fun(state: pipeline.State)[]
 local M = {
@@ -40,7 +43,7 @@ local function emit_update(state)
   end
 end
 
-emit_update = utils.debounced(vim.schedule_wrap(emit_update))
+emit_update = utils.debounced(emit_update)
 
 ---@param fn fun(render_state: pipeline.State): pipeline.State|nil
 function M.update_state(fn)

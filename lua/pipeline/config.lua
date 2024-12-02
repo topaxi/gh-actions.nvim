@@ -100,6 +100,7 @@ function M.setup(opts)
   M.options = vim.tbl_deep_extend('force', defaultConfig, opts)
   M.options.allowed_hosts = M.options.allowed_hosts or {}
   table.insert(M.options.allowed_hosts, 'github.com')
+  table.insert(M.options.allowed_hosts, 'gitlab.com')
 end
 
 function M.is_host_allowed(host)

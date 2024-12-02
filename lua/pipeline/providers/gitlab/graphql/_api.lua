@@ -93,10 +93,11 @@ end
 ---@class pipeline.providers.gitlab.graphql.QueryResponse
 ---@field data { project: pipeline.providers.gitlab.graphql.QueryResponseProject }
 
+---@param _host string Currently unused, glab selects the host automatically
 ---@param repo string
 ---@param limit number
 ---@param callback fun(response: pipeline.providers.gitlab.graphql.QueryResponse)
-function M.get_project_pipelines(repo, limit, callback)
+function M.get_project_pipelines(_host, repo, limit, callback)
   local query_job =
     glab_graphql(pipelines_with_jobs_query, { repo = repo, limit = limit })
 
