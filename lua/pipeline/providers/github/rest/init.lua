@@ -125,7 +125,7 @@ end
 function GithubRestProvider:fetch_jobs(run_id)
   local Mapper = require('pipeline.providers.github.rest._mapper')
 
-  gh_api().get_workflow_run_jobs(self.server, self.repo, run.run_id, 20, {
+  gh_api().get_workflow_run_jobs(self.server, self.repo, run_id, 20, {
     callback = function(err, jobs)
       self.store.update_state(function(state)
         state.error = err and err.message or nil
