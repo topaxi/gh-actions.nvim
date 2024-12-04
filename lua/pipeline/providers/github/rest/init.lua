@@ -207,17 +207,19 @@ function GithubRestProvider:dispatch(pipeline)
 
                       store.update_state(function(state)
                         state.error = err and err.message or nil
-                        state.runs = utils.group_by(
-                          function(run)
-                            return run.pipeline_id
-                          end,
-                          utils.uniq(function(run)
-                            return run.run_id
-                          end, {
-                            unpack(runs),
-                            unpack(vim.iter(state.runs):flatten():totable()),
-                          })
-                        )
+                        if not state.error then
+                          state.runs = utils.group_by(
+                            function(run)
+                              return run.pipeline_id
+                            end,
+                            utils.uniq(function(run)
+                              return run.run_id
+                            end, {
+                              unpack(runs),
+                              unpack(vim.iter(state.runs):flatten():totable()),
+                            })
+                          )
+                        end
                       end)
                     end,
                   }
