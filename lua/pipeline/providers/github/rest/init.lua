@@ -1,5 +1,5 @@
 local utils = require('pipeline.utils')
-local Provider = require('pipeline.providers.provider')
+local Provider = require('pipeline.providers.polling')
 
 local function git()
   return require('pipeline.git')
@@ -9,13 +9,13 @@ local function gh_api()
   return require('pipeline.providers.github.rest._api')
 end
 
----@class pipeline.providers.github.rest.Options
+---@class pipeline.providers.github.rest.Options: pipeline.providers.polling.Options
 ---@field refresh_interval? number
 local defaultOptions = {
   refresh_interval = 10,
 }
 
----@class pipeline.providers.github.rest.Provider: pipeline.Provider
+---@class pipeline.providers.github.rest.Provider: pipeline.providers.polling.Provider
 ---@field protected opts pipeline.providers.github.rest.Options
 ---@field private server string
 ---@field private repo string
@@ -38,9 +38,12 @@ end
 
 ---@param opts pipeline.providers.github.rest.Options
 function GithubRestProvider:init(opts)
+  self.opts = vim.tbl_deep_extend('force', defaultOptions, opts)
+
+  Provider.init(self, self.opts)
+
   local server, repo = git().get_current_repository()
 
-  self.opts = vim.tbl_deep_extend('force', defaultOptions, opts)
   self.server = server
   self.repo = repo
 
@@ -49,6 +52,10 @@ function GithubRestProvider:init(opts)
     state.server = server
     state.repo = repo
   end)
+end
+
+function GithubRestProvider:poll()
+  self:fetch()
 end
 
 --TODO Only periodically fetch all workflows
@@ -284,22 +291,6 @@ function GithubRestProvider:dispatch(pipeline)
 
     ask_next()
   end
-end
-
-function GithubRestProvider:connect()
-  self.timer = vim.loop.new_timer()
-  self.timer:start(
-    0,
-    self.opts.refresh_interval * 1000,
-    vim.schedule_wrap(function()
-      self:fetch()
-    end)
-  )
-end
-
-function GithubRestProvider:disconnect()
-  self.timer:stop()
-  self.timer = nil
 end
 
 return GithubRestProvider

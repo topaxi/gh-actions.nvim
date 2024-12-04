@@ -12,14 +12,13 @@ local utils = require('pipeline.utils')
 ---@field from? integer
 ---@field to? integer
 
----@class pipeline.Render:Buffer
+---@class pipeline.Render:pipeline.ui.Buffer
 ---@field store pipeline.ReadonlyStore
 ---@field locations pipeline.RenderLocation[]
 local PipelineRender = {
   locations = {},
 }
-
-setmetatable(PipelineRender, { __index = Buffer })
+PipelineRender.__index = setmetatable(PipelineRender, Buffer)
 
 ---@param run { status: string, conclusion: string }
 ---@return string
@@ -58,9 +57,8 @@ end
 ---@param store pipeline.ReadonlyStore
 ---@return pipeline.Render
 function PipelineRender.new(store)
-  local self = setmetatable({}, {
-    __index = PipelineRender,
-  })
+  local self = setmetatable({}, PipelineRender)
+  ---@cast self pipeline.Render
 
   Buffer.init(self, { indent = Config.options.indent })
 

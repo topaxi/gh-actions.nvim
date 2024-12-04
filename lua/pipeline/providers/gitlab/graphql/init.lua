@@ -1,5 +1,5 @@
 local utils = require('pipeline.utils')
-local Provider = require('pipeline.providers.provider')
+local Provider = require('pipeline.providers.polling')
 
 local function git()
   return require('pipeline.git')
@@ -9,13 +9,13 @@ local function glab_api()
   return require('pipeline.providers.gitlab.graphql._api')
 end
 
----@class pipeline.providers.gitlab.graphql.Options
+---@class pipeline.providers.gitlab.graphql.Options: pipeline.providers.polling.Options
 ---@field refresh_interval? number
 local defaultOptions = {
   refresh_interval = 10,
 }
 
----@class pipeline.providers.gitlab.graphql.Provider: pipeline.Provider
+---@class pipeline.providers.gitlab.graphql.Provider: pipeline.providers.polling.Provider
 ---@field protected opts pipeline.providers.gitlab.graphql.Options
 ---@field private server string
 ---@field private repo string
@@ -42,9 +42,12 @@ end
 
 ---@param opts pipeline.providers.github.rest.Options
 function GitlabGraphQLProvider:init(opts)
+  self.opts = vim.tbl_deep_extend('force', defaultOptions, opts)
+
+  Provider.init(self, self.opts)
+
   local server, repo = git().get_current_repository()
 
-  self.opts = vim.tbl_deep_extend('force', defaultOptions, opts)
   self.server = server
   self.repo = repo
 
@@ -53,6 +56,10 @@ function GitlabGraphQLProvider:init(opts)
     state.server = server
     state.repo = repo
   end)
+end
+
+function GitlabGraphQLProvider:poll()
+  self:fetch()
 end
 
 function GitlabGraphQLProvider:fetch()
@@ -114,22 +121,6 @@ function GitlabGraphQLProvider:dispatch(pipeline)
       vim.log.levels.INFO
     )
   end
-end
-
-function GitlabGraphQLProvider:connect()
-  self.timer = vim.loop.new_timer()
-  self.timer:start(
-    0,
-    self.opts.refresh_interval * 1000,
-    vim.schedule_wrap(function()
-      self:fetch()
-    end)
-  )
-end
-
-function GitlabGraphQLProvider:disconnect()
-  self.timer:stop()
-  self.timer = nil
 end
 
 return GitlabGraphQLProvider

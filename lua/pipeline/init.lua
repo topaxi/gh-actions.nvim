@@ -23,13 +23,18 @@ function M.setup_provider()
   local config = require('pipeline.config')
   local store = require('pipeline.store')
 
-  M.pipeline = require('pipeline.providers.provider'):new(config.options, store)
   for provider, provider_options in pairs(config.options.providers) do
     local Provider = require('pipeline.providers')[provider]
 
     if Provider.detect() then
       M.pipeline = Provider:new(config.options, store, provider_options)
+      break
     end
+  end
+
+  if not M.pipeline then
+    M.pipeline =
+      require('pipeline.providers.provider'):new(config.options, store)
   end
 end
 

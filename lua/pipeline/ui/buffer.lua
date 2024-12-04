@@ -4,18 +4,17 @@
 
 ---@alias Line TextSegment[]
 
----@class Buffer
+---@class pipeline.ui.Buffer
 ---@field protected _lines Line[]
 ---@field protected _indent number
 local Buffer = {
   ns = vim.api.nvim_create_namespace('pipeline.nvim'),
 }
+Buffer.__index = Buffer
 
 ---@param opts? { indent?: integer }
 function Buffer.new(opts)
-  local self = setmetatable({}, {
-    __index = Buffer,
-  })
+  local self = setmetatable({}, Buffer)
 
   self:init(opts)
 

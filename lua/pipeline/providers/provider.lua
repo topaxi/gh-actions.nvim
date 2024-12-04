@@ -28,12 +28,13 @@
 ---@field protected store pipeline.Store
 ---@field private listener_count integer
 local Provider = {}
+Provider.__index = Provider
 
 ---@return pipeline.Provider
 function Provider:extend()
-  return setmetatable({}, {
-    __index = self,
-  })
+  local Class = setmetatable({}, self)
+  Class.__index = Class
+  return Class
 end
 
 function Provider.detect()
@@ -48,9 +49,7 @@ end
 ---@param opts? table
 ---@return self
 function Provider:new(config, store, opts)
-  local instance = setmetatable({}, {
-    __index = self,
-  })
+  local instance = setmetatable({}, self)
   instance.config = config
   instance.store = store
   instance.listener_count = 0
