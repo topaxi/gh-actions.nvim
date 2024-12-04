@@ -58,6 +58,12 @@ end
 --TODO Maybe send lsp progress events when fetching, to interact
 --     with fidget.nvim
 function GithubRestProvider:fetch()
+  self:fetch_workflows()
+  self:fetch_runs()
+end
+
+---@package
+function GithubRestProvider:fetch_workflows()
   local Mapper = require('pipeline.providers.github.rest._mapper')
 
   gh_api().get_workflows(self.server, self.repo, {
@@ -71,6 +77,11 @@ function GithubRestProvider:fetch()
       end)
     end,
   })
+end
+
+---@package
+function GithubRestProvider:fetch_runs()
+  local Mapper = require('pipeline.providers.github.rest._mapper')
 
   gh_api().get_repository_workflow_runs(self.server, self.repo, 100, {
     callback = function(err, workflow_runs)
@@ -103,23 +114,31 @@ function GithubRestProvider:fetch()
       )
 
       for _, run in ipairs(running_workflows) do
-        gh_api().get_workflow_run_jobs(self.server, self.repo, run.run_id, 20, {
-          callback = function(err, jobs)
-            self.store.update_state(function(state)
-              state.error = err and err.message or nil
-              if not state.error then
-                state.jobs[run.run_id] = vim.tbl_map(Mapper.to_job, jobs)
-
-                for _, job in ipairs(jobs) do
-                  state.steps[job.id] = vim.tbl_map(function(step)
-                    return Mapper.to_step(job.id, step)
-                  end, job.steps)
-                end
-              end
-            end)
-          end,
-        })
+        self:fetch_jobs(run.run_id)
       end
+    end,
+  })
+end
+
+---@param run_id number
+---@package
+function GithubRestProvider:fetch_jobs(run_id)
+  local Mapper = require('pipeline.providers.github.rest._mapper')
+
+  gh_api().get_workflow_run_jobs(self.server, self.repo, run.run_id, 20, {
+    callback = function(err, jobs)
+      self.store.update_state(function(state)
+        state.error = err and err.message or nil
+        if not state.error then
+          state.jobs[run_id] = vim.tbl_map(Mapper.to_job, jobs)
+
+          for _, job in ipairs(jobs) do
+            state.steps[job.id] = vim.tbl_map(function(step)
+              return Mapper.to_step(job.id, step)
+            end, job.steps)
+          end
+        end
+      end)
     end,
   })
 end
