@@ -34,7 +34,7 @@ end
 ---@param server? string
 ---@return string, string
 function M.get_github_token(cmd, server)
-  local token = vim.g.GITHUB_TOKEN
+  local token = vim.env.GITHUB_TOKEN
 
   if token then
     return token, 'env'
