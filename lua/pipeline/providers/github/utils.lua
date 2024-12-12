@@ -32,12 +32,22 @@ end
 
 ---@param cmd? string
 ---@param server? string
----@return string
+---@return string, string
 function M.get_github_token(cmd, server)
-  return vim.env.GITHUB_TOKEN
-    or get_token_from_gh_cli(cmd, server)
-    -- TODO: We could also ask for the token here via nui
-    or assert(nil, 'No GITHUB_TOKEN found in env and no gh cli config found')
+  local token = vim.g.GITHUB_TOKEN
+
+  if token then
+    return token, 'env'
+  end
+
+  token = get_token_from_gh_cli(cmd, server)
+
+  if token then
+    return token, 'gh'
+  end
+
+  -- TODO: We could also ask for the token here via nui and store it ourselves
+  assert(nil, 'No GITHUB_TOKEN found in env and no gh cli config found')
 end
 
 ---@param path string
